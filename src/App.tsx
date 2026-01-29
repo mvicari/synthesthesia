@@ -4,7 +4,7 @@ import { Keyboard } from './components/Keyboard';
 import { Visualizer, type Ripple, type VisualizerMode } from './components/Visualizer';
 import { Wheels } from './components/Wheels';
 import { NoteInfoCard } from './components/NoteInfoCard';
-import { AttributionModal } from './components/AttributionModal';
+import { ContextModal } from './components/ContextModal';
 import { useAudio } from './utils/audio';
 import { NOTES, type Note } from './utils/notes';
 
@@ -16,7 +16,7 @@ function App() {
   const [hasStarted, setHasStarted] = useState(false);
   const [mode, setMode] = useState<VisualizerMode>('synth');
   const [mobileInfoOpen, setMobileInfoOpen] = useState(false);
-  const [isAttributionOpen, setIsAttributionOpen] = useState(false);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   // Update Audio Engine when UI state changes
   useEffect(() => {
@@ -243,9 +243,9 @@ function App() {
             </div>
 
             <button
-              onClick={() => setIsAttributionOpen(true)}
+              onClick={() => setIsInfoOpen(true)}
               className="mt-1 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/40 transition-all hover:bg-white/10 hover:text-white"
-              title="Theory & Credits"
+              title="Theory & Context"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
             </button>
@@ -354,9 +354,10 @@ function App() {
         mode={mode}
       />
 
-      <AttributionModal
-        isOpen={isAttributionOpen}
-        onClose={() => setIsAttributionOpen(false)}
+      <ContextModal
+        isOpen={isInfoOpen}
+        onClose={() => setIsInfoOpen(false)}
+        mode={mode}
       />
     </div >
   );
