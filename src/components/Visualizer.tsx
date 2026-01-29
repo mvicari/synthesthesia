@@ -16,7 +16,6 @@ interface VisualizerProps {
   ripples: Ripple[];
   activeNotes: Set<number>;
   pitchBend?: number;
-  analyser?: AnalyserNode | null;
   mode?: VisualizerMode;
 }
 
@@ -24,7 +23,6 @@ export const Visualizer: React.FC<VisualizerProps> = ({
   ripples,
   activeNotes,
   pitchBend = 0,
-  analyser,
   mode = 'synth',
 }) => {
   // Helper to calculate bent frequency
@@ -60,118 +58,6 @@ export const Visualizer: React.FC<VisualizerProps> = ({
     }
   }
 
-  // 4. Performance Refs for Animation Loop
-  // We use refs so the loop doesn't restart every time color/input changes
-  const blendColorRef = React.useRef(blendColor);
-  const hasActiveInputRef = React.useRef(hasActiveInput);
-
-  React.useEffect(() => {
-    blendColorRef.current = blendColor;
-    hasActiveInputRef.current = hasActiveInput;
-  }, [blendColor, hasActiveInput]);
-
-  const canvasRef = React.useRef<HTMLCanvasElement>(null);
-
-  React.useEffect(() => {
-    if (!canvasRef.current || !analyser) return;
-
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d', { alpha: true }); // optimize context
-    if (!ctx) return;
-
-    // Set canvas size
-    const resizeCanvas = () => {
-      // Use devicePixelRatio for sharpness, but verify performance. 
-      // For laggy systems, 1 is safer. Let's stick to 1 for now or 
-      // maybe slight optimization: set strict dimensions.
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-
-    let animationId: number;
-
-    const draw = () => {
-      animationId = requestAnimationFrame(draw);
-
-      const isInputActive = hasActiveInputRef.current;
-
-      // If no input, clear and skip heavy math
-      if (!isInputActive) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        return;
-      }
-
-      analyser.getByteTimeDomainData(dataArray);
-
-      // Clear
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      const width = canvas.width;
-      const height = canvas.height;
-      const currentColor = blendColorRef.current;
-
-      ctx.lineWidth = 2;
-
-      // 1. Draw "Light" Wave (High Frequency, Color)
-      ctx.beginPath();
-      ctx.strokeStyle = currentColor;
-      // OPTIMIZATION: Removed shadowBlur (very expensive)
-      // ctx.shadowBlur = 20; 
-      // ctx.shadowColor = currentColor;
-
-      const lightFreqMult = 20;
-
-      // OPTIMIZATION: Step by 2 or 4 to reduce draw calls if high resolution isn't needed
-      // But for 2048 points on a wide screen, 1 is okay. Let's try skipping if performance is key.
-      // Let's keep 1 for quality as request was generic "laggy". ShadowBlur removal is big win.
-
-      for (let i = 0; i < bufferLength; i++) {
-        const v = dataArray[i] / 128.0;
-        const y = v * height / 2;
-        const x = (i / bufferLength) * width;
-
-        const lightMod = Math.sin(i * lightFreqMult) * 50 * (Math.abs(v - 1));
-
-        if (i === 0) {
-          ctx.moveTo(x, y + lightMod);
-        } else {
-          ctx.lineTo(x, y + lightMod);
-        }
-      }
-      ctx.stroke();
-
-      // 2. Draw "Sound" Wave (Real Audio Data, White)
-      ctx.beginPath();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-      ctx.lineWidth = 3;
-
-      for (let i = 0; i < bufferLength; i += 2) { // Skip every other point for line smoothing/perf
-        const v = dataArray[i] / 128.0;
-        const y = v * height / 2;
-        const x = (i / bufferLength) * width;
-
-        if (i === 0) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
-      }
-      ctx.stroke();
-    };
-
-    draw();
-
-    return () => {
-      window.removeEventListener('resize', resizeCanvas);
-      cancelAnimationFrame(animationId);
-    };
-  }, [analyser]); // Only re-run if analyser instance changes (rare)
-
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden bg-black z-0 perspective-[1000px]">
       {/* Deep Space / Aurora Background */}
@@ -199,12 +85,6 @@ export const Visualizer: React.FC<VisualizerProps> = ({
           />
         )}
       </div>
-
-      {/* WAVEFORM CANVAS LAYER */}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full z-10 mix-blend-screen opacity-80"
-      />
 
       {/* Main 3D Scene Layer - Simplified ripples */}
       <div className="absolute inset-0">

@@ -8,7 +8,7 @@ import { useAudio } from './utils/audio';
 import { NOTES, type Note } from './utils/notes';
 
 function App() {
-  const { playTone, stopTone, initAudio, setPitchBend: setAudioPitch, analyser } = useAudio();
+  const { playTone, stopTone, initAudio, setPitchBend: setAudioPitch } = useAudio();
   const [activeNotes, setActiveNotes] = useState<Set<number>>(new Set());
   const [ripples, setRipples] = useState<Ripple[]>([]);
   const [pitchBend, setPitchBend] = useState(0); // -2 to 2 semitones
@@ -163,7 +163,6 @@ function App() {
         ripples={ripples}
         activeNotes={activeNotes}
         pitchBend={pitchBend}
-        analyser={analyser.current}
         mode={mode}
       />
 
