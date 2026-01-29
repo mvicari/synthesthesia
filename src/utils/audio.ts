@@ -3,6 +3,7 @@ import { useRef, useEffect, useCallback } from 'react';
 export const useAudio = () => {
   const audioContext = useRef<AudioContext | null>(null);
   const masterGain = useRef<GainNode | null>(null);
+  const analyser = useRef<AnalyserNode | null>(null);
   
   // Active nodes storage
   const oscillators = useRef<Map<number, OscillatorNode>>(new Map());
@@ -14,9 +15,17 @@ export const useAudio = () => {
   const initAudio = useCallback(() => {
     if (!audioContext.current) {
       audioContext.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
       masterGain.current = audioContext.current.createGain();
       masterGain.current.gain.value = 0.3; 
-      masterGain.current.connect(audioContext.current.destination);
+
+      analyser.current = audioContext.current.createAnalyser();
+      analyser.current.fftSize = 2048; // Higher res for waveform
+
+      // Master -> Analyser -> Destination
+      masterGain.current.connect(analyser.current);
+      analyser.current.connect(audioContext.current.destination);
+
     } else if (audioContext.current.state === 'suspended') {
       audioContext.current.resume();
     }
@@ -100,5 +109,5 @@ export const useAudio = () => {
     };
   }, []);
 
-  return { playTone, stopTone, initAudio, setPitchBend };
+  return { playTone, stopTone, initAudio, setPitchBend, analyser };
 };

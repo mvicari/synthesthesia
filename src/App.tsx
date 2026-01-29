@@ -6,7 +6,7 @@ import { useAudio } from './utils/audio';
 import { NOTES, type Note } from './utils/notes';
 
 function App() {
-  const { playTone, stopTone, initAudio, setPitchBend: setAudioPitch } = useAudio();
+  const { playTone, stopTone, initAudio, setPitchBend: setAudioPitch, analyser } = useAudio();
   const [activeNotes, setActiveNotes] = useState<Set<number>>(new Set());
   const [ripples, setRipples] = useState<Ripple[]>([]);
   const [pitchBend, setPitchBend] = useState(0); // -2 to 2 semitones
@@ -122,7 +122,12 @@ function App() {
     <div className="relative w-screen h-screen bg-black flex flex-col justify-end overflow-hidden"
          onClick={initAudio} 
     >
-      <Visualizer ripples={ripples} activeNotes={activeNotes} pitchBend={pitchBend} />
+      <Visualizer 
+        ripples={ripples} 
+        activeNotes={activeNotes} 
+        pitchBend={pitchBend} 
+        analyser={analyser.current} 
+      />
       
       {/* Info Panel */}
       <div className="absolute top-4 left-4 md:top-8 md:left-8 z-40 max-w-[200px] md:max-w-sm pointer-events-none select-none">
@@ -146,18 +151,18 @@ function App() {
         </div>
       </div>
 
-      <div className="z-50 w-full max-w-5xl mx-auto mb-4 md:mb-8 px-2 md:px-4">
+      <div className="z-50 w-full mb-4 px-2 md:px-4">
         <div className="mb-2 md:mb-4 text-center">
           <h1 className="text-2xl md:text-4xl font-light tracking-[0.3em] md:tracking-[0.5em] text-white opacity-80 mix-blend-difference">
             SYNTHESTHESIA
           </h1>
           <p className="text-[10px] md:text-xs text-gray-400 mt-1 md:mt-2 font-mono opacity-50">
-            PRESS KEYS [A-Z] OR TAP
+            PRESS KEYS [A-Z], TAP, OR SCROLL PITCH
           </p>
         </div>
         
         {/* Controls Container */}
-        <div className="flex gap-2 md:gap-4 items-end justify-center w-full">
+        <div className="flex gap-2 md:gap-6 items-end justify-center w-full max-w-none">
           <Wheels 
             onPitchBend={setPitchBend}
             pitchBend={pitchBend}

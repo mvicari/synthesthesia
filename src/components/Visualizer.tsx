@@ -14,15 +14,117 @@ interface VisualizerProps {
   ripples: Ripple[];
   activeNotes: Set<number>;
   pitchBend?: number;
+  analyser?: AnalyserNode | null;
 }
 
-export const Visualizer: React.FC<VisualizerProps> = ({ ripples, activeNotes, pitchBend = 0 }) => {
+export const Visualizer: React.FC<VisualizerProps> = ({ ripples, activeNotes, pitchBend = 0, analyser }) => {
   // Helper to calculate bent frequency
   const getBentFreq = (baseFreq: number) => baseFreq * Math.pow(2, pitchBend / 12);
   
   // Calculate blended chord color
   const currentBentFreqs = Array.from(activeNotes).map(getBentFreq);
   const blendColor = getMixColor(currentBentFreqs);
+
+  // Canvas for Waveform
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+
+  React.useEffect(() => {
+    if (!canvasRef.current || !analyser) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Set canvas size
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    let animationId: number;
+
+    const draw = () => {
+      animationId = requestAnimationFrame(draw);
+      analyser.getByteTimeDomainData(dataArray);
+
+      // Clear but keep transparent
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // We only draw if there's sound
+      if (activeNotes.size === 0) return;
+
+      const width = canvas.width;
+      const height = canvas.height;
+      const centerY = height / 2;
+
+      ctx.lineWidth = 2;
+      
+      // 1. Draw "Light" Wave (High Frequency, Color)
+      // We simulate light by drawing a wave that is much faster than the audio wave
+      // The amplitude is modulated by the audio data
+      ctx.beginPath();
+      ctx.strokeStyle = blendColor;
+      // Glow effect for light
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = blendColor;
+
+      const lightFreqMult = 20; // Simulate "higher frequency"
+      
+      for (let i = 0; i < bufferLength; i++) {
+        const v = dataArray[i] / 128.0; // 0..2 (1 is center)
+        const y = v * height/2;
+        // Current slice percentage
+        const x = (i / bufferLength) * width;
+        
+        // Add high freq sine modulation
+        const lightMod = Math.sin(i * lightFreqMult) * 50 * (Math.abs(v - 1)); // Amplitude scales with volume
+        
+        if (i === 0) {
+          ctx.moveTo(x, y + lightMod);
+        } else {
+          ctx.lineTo(x, y + lightMod);
+        }
+      }
+      ctx.stroke();
+      
+      // Reset Shadow for next pass
+      ctx.shadowBlur = 0;
+
+      // 2. Draw "Sound" Wave (Real Audio Data, White)
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.lineWidth = 3;
+
+      for (let i = 0; i < bufferLength; i++) {
+        const v = dataArray[i] / 128.0;
+        const y = v * height / 2; // Map 0..2 to 0..height
+        // Note: dataArray values are 0-255. 128 is silence.
+        // v goes from 0 to 2. 1 is center.
+        // if v=1, y = height/2. Perfect.
+
+        const x = (i / bufferLength) * width;
+
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      ctx.stroke();
+    };
+
+    draw();
+
+    return () => {
+      window.removeEventListener('resize', resizeCanvas);
+      cancelAnimationFrame(animationId);
+    };
+  }, [analyser, activeNotes, blendColor]);
 
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden bg-black z-0 perspective-[1000px]">
@@ -49,6 +151,12 @@ export const Visualizer: React.FC<VisualizerProps> = ({ ripples, activeNotes, pi
            />
          )}
       </div>
+
+      {/* WAVEFORM CANVAS LAYER */}
+      <canvas 
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full z-10 mix-blend-screen opacity-80"
+      />
 
       {/* Main 3D Scene Layer */}
       <div className="absolute inset-0 transform-style-3d rotate-x-[10deg]">
