@@ -60,7 +60,6 @@ export const Visualizer: React.FC<VisualizerProps> = ({ ripples, activeNotes, pi
 
       const width = canvas.width;
       const height = canvas.height;
-      const centerY = height / 2;
 
       ctx.lineWidth = 2;
       
