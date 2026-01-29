@@ -77,6 +77,7 @@ export default defineConfig([
 ### The Newtonian Mode (Physics)
 Maps audio frequency directly to light frequency by doubling octaves (~40 times) until the audible spectrum hits the visible spectrum (THz).
 * **Result:** Low pitch = Red, High pitch = Violet.
+* **Source:** [Opticks (Project Gutenberg)](https://www.gutenberg.org/files/33504/33504-h/33504-h.htm)
 
 ### The Mermikides Model (Psychology)
 Based on the research of **Dr. Milton Mermikides**, this mode prioritizes *perceptual* harmony. It maps the **Circle of Fifths** to the Color Wheel.
