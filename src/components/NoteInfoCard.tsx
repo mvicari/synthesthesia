@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { frequencyToHSL, getMixColor, getLightStats, getHarmonicColor, getHarmonicPitchInfo } from '../utils/colors';
 import { NOTES } from '../utils/notes';
+import { detectChord } from '../utils/chords';
 
 export interface NoteInfoCardProps {
     activeNotes: Set<number>;
@@ -74,7 +75,15 @@ export const NoteInfoCard: React.FC<NoteInfoCardProps> = ({
                                             className="text-6xl md:text-8xl font-thin text-white tracking-tighter mb-2 leading-none"
                                             style={{ textShadow: `0 0 40px ${blendColor}50` }}
                                         >
-                                            {pitchInfo.noteName}<span className="text-2xl md:text-4xl text-white/50 align-top ml-1">{pitchInfo.octave}</span>
+                                            {allActiveFreqs.length > 1 ? (
+                                                detectChord(allActiveFreqs) ? (
+                                                    <span className="text-4xl md:text-5xl">{detectChord(allActiveFreqs)?.name}</span>
+                                                ) : (
+                                                    <span className="text-4xl md:text-5xl">{allActiveFreqs.length}<span className="text-xl ml-2 opacity-50 font-normal tracking-normal">NOTES</span></span>
+                                                )
+                                            ) : (
+                                                <>{pitchInfo.noteName}<span className="text-2xl md:text-4xl text-white/50 align-top ml-1">{pitchInfo.octave}</span></>
+                                            )}
                                         </span>
                                         <span className="text-lg font-mono text-white/70">
                                             {primaryFrequency.toFixed(1)} Hz
@@ -105,7 +114,11 @@ export const NoteInfoCard: React.FC<NoteInfoCardProps> = ({
                                             style={{ textShadow: `0 0 40px ${blendColor}50` }}
                                         >
                                             {allActiveFreqs.length > 1 ? (
-                                                <span className="text-4xl md:text-5xl">{allActiveFreqs.length}<span className="text-xl ml-2 opacity-50 font-normal tracking-normal">NOTES</span></span>
+                                                detectChord(allActiveFreqs) ? (
+                                                    <span className="text-4xl md:text-5xl">{detectChord(allActiveFreqs)?.name}</span>
+                                                ) : (
+                                                    <span className="text-4xl md:text-5xl">{allActiveFreqs.length}<span className="text-xl ml-2 opacity-50 font-normal tracking-normal">NOTES</span></span>
+                                                )
                                             ) : (note?.note || '?')}
                                         </span>
                                         <span className="text-lg font-mono text-white/70">
