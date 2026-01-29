@@ -184,6 +184,9 @@ function App() {
             <p className="text-center text-white/50 font-mono text-sm tracking-widest group-hover:text-white transition-colors">
               TAP TO ENTER
             </p>
+            <p className="mt-8 text-[9px] md:text-[10px] text-white/20 font-mono uppercase tracking-[0.2em] text-center max-w-[250px] mx-auto leading-relaxed border-t border-white/5 pt-4">
+              Note: Ensure silent mode is <span className="text-white/40">OFF</span> (Ringer ON) for audio on iOS devices.
+            </p>
           </div>
         </div>
       )}
