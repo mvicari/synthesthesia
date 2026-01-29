@@ -14,35 +14,39 @@ export const useAudio = () => {
 
   const initAudio = useCallback(() => {
     if (!audioContext.current) {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      audioContext.current = new AudioCtx();
+      try {
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioCtx) {
+          console.error("Web Audio API not supported");
+          return;
+        }
+        audioContext.current = new AudioCtx();
 
-      console.log("AudioContext created. State:", audioContext.current.state, "Sample Rate:", audioContext.current.sampleRate);
+        console.log("AudioContext created. State:", audioContext.current.state);
 
-      masterGain.current = audioContext.current.createGain();
-      masterGain.current.gain.value = 0.3;
+        masterGain.current = audioContext.current.createGain();
+        masterGain.current.gain.setValueAtTime(0.5, audioContext.current.currentTime);
 
-      analyser.current = audioContext.current.createAnalyser();
-      analyser.current.fftSize = 2048;
+        analyser.current = audioContext.current.createAnalyser();
+        analyser.current.fftSize = 2048;
 
-      masterGain.current.connect(analyser.current);
-      analyser.current.connect(audioContext.current.destination);
+        masterGain.current.connect(analyser.current);
+        analyser.current.connect(audioContext.current.destination);
 
-      // iOS Unlock: Play a silent buffer
-      const buffer = audioContext.current.createBuffer(1, 1, 22050);
-      const source = audioContext.current.createBufferSource();
-      source.buffer = buffer;
-      source.connect(audioContext.current.destination);
-      source.start(0);
+        // iOS Unlock: Play a silent buffer
+        const buffer = audioContext.current.createBuffer(1, 1, 22050);
+        const source = audioContext.current.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioContext.current.destination);
+        source.start(0);
 
-      audioContext.current.resume().then(() => {
-        console.log("AudioContext resumed. State:", audioContext.current?.state);
-      });
-
+        // Force resume on creation
+        audioContext.current.resume();
+      } catch (e) {
+        console.error("Failed to initialize audio:", e);
+      }
     } else if (audioContext.current.state !== 'running') {
-      audioContext.current.resume()
-        .then(() => console.log("AudioContext resumed from state:", audioContext.current?.state))
-        .catch(e => console.error("Audio resume failed:", e));
+      audioContext.current.resume().catch(e => console.warn("Resume failed:", e));
     }
   }, []);
 
@@ -119,7 +123,17 @@ export const useAudio = () => {
   }, []);
 
   useEffect(() => {
+    const resume = () => {
+      if (audioContext.current && audioContext.current.state !== 'running') {
+        audioContext.current.resume();
+      }
+    };
+    window.addEventListener('click', resume);
+    window.addEventListener('touchstart', resume);
+
     return () => {
+      window.removeEventListener('click', resume);
+      window.removeEventListener('touchstart', resume);
       if (audioContext.current) {
         audioContext.current.close();
       }
