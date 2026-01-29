@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
 import { Keyboard } from './components/Keyboard';
 import { Visualizer, type Ripple, type VisualizerMode } from './components/Visualizer';
 import { Wheels } from './components/Wheels';
@@ -15,7 +14,6 @@ function App() {
   const [pitchBend, setPitchBend] = useState(0); // -2 to 2 semitones
   const [hasStarted, setHasStarted] = useState(false);
   const [mode, setMode] = useState<VisualizerMode>('synth');
-  const [mobileInfoOpen, setMobileInfoOpen] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   // Update Audio Engine when UI state changes
@@ -252,78 +250,7 @@ function App() {
           </div>
         </header>
 
-        {/* Center - Info Panel (Interactive on Mobile) */}
-        {/* Changed from top-1/2 to top-24/32 to avoid overlap with center visualizer */}
-        <div className={`absolute top-24 md:top-32 left-4 md:left-8 z-40 transition-all duration-300 ${mobileInfoOpen ? 'max-w-[85vw]' : 'max-w-[200px]'} md:max-w-sm pointer-events-none select-none`}>
-          {/* Note Info is handled by Visualizer component now */}
-
-          <motion.div
-            layout
-            onClick={() => setMobileInfoOpen(!mobileInfoOpen)}
-            className={`
-              backdrop-blur-xl bg-black/20 border border-white/5 p-5 md:p-6 rounded-3xl shadow-2xl 
-              pointer-events-auto cursor-pointer md:cursor-default overflow-hidden ring-1 ring-white/5
-            `}
-          >
-            <motion.div layout="position" className="flex items-center justify-between">
-              <h2 className="text-sm md:text-xl font-light text-white mb-2 tracking-wide border-b border-white/20 pb-2 flex-grow">
-                {mode === 'synth' ? 'Physics Mode' : 'Harmonic Mode'}
-              </h2>
-              <motion.span
-                animate={{ rotate: mobileInfoOpen ? 180 : 0 }}
-                className="md:hidden text-white/50 ml-2 mb-2"
-              >
-                ▼
-              </motion.span>
-            </motion.div>
-
-            <motion.div
-              layout
-              initial={false}
-              animate={window.innerWidth >= 768 ? "desktop" : (mobileInfoOpen ? "expanded" : "collapsed")}
-              variants={{
-                collapsed: { height: 0, opacity: 0 },
-                expanded: { height: 'auto', opacity: 1 },
-                desktop: { height: 'auto', opacity: 1 }
-              }}
-              className="text-[10px] md:text-sm text-gray-300 leading-relaxed font-light origin-top"
-            >
-              {mode === 'synth' ? (
-                <>
-                  <span className="text-xs uppercase tracking-widest text-white/50 border-b border-white/10 pb-1 mb-1 block">The Theory</span>
-                  Sound and light are both <span className="text-blue-300">waves</span>. <br />
-                  If you double a note's frequency ~40 times (octave doubling), it matches a specific color of light.
-                  <br className="mt-2 block" />
-                  This mode visualizes the <span className="font-mono text-blue-300">literal color</span> of sound.
-                  <br className="mt-3 block" />
-                  {/* <span className="text-[10px] text-white/40">Based on the theories of <span className="text-blue-300/70">Sir Isaac Newton</span>.</span> */}
-                </>
-              ) : (
-                <>
-                  <span className="text-xs uppercase tracking-widest text-white/50 border-b border-white/10 pb-1 mb-1 block">The Theory</span>
-                  Colors are mapped by <span className="text-pink-300">harmonic relationship</span> rather than physics.
-                  <br className="mt-2 block" />
-                  Notes a <span className="font-mono text-pink-300">Perfect Fifth</span> apart (like C and G) appear as adjacent colors.
-                  This mirrors how our ears perceive <span className="text-white">musical consonance</span>.
-                  <br className="mt-3 block" />
-                  <span className="text-[10px] text-white/40">Based on the research of <span className="text-pink-300/70">Dr. Milton Mermikides</span>.</span>
-                </>
-              )}
-            </motion.div>
-
-            {!mobileInfoOpen && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-[10px] text-pink-300/70 md:hidden mt-1 font-mono tracking-wider"
-              >
-                Tap to explore theory
-              </motion.p>
-            )}
-          </motion.div>
-        </div>
-
-        <div className={`z-50 w-full max-w-5xl mx-auto mb-4 md:mb-8 px-2 md:px-4 overflow-hidden pointer-events-none transition-all duration-500 ease-in-out ${mobileInfoOpen ? 'blur-md opacity-30 scale-95' : ''}`}>
+        <div className={`z-50 w-full max-w-5xl mx-auto mb-4 md:mb-8 px-2 md:px-4 overflow-hidden pointer-events-none transition-all duration-500 ease-in-out`}>
           <div className="mb-2 md:mb-4 text-center">
             <p className="text-[10px] md:text-xs text-gray-400 mt-1 md:mt-2 font-mono opacity-50">
               PRESS KEYS [A-Z], TAP, OR SCROLL PITCH
