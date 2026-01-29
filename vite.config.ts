@@ -8,5 +8,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-  base: '/',
+  // Use '/synthesthesia/' for GitHub Pages (matches repo name)
+  // Use '/' for custom domain or local dev
+  base: '/synthesthesia/',
 })
