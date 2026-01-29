@@ -122,6 +122,15 @@ export const useMicrophone = (audioContext: AudioContext | null) => {
             return false;
         }
 
+        // Check if mediaDevices API is available (requires HTTPS)
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            setState(prev => ({
+                ...prev,
+                error: 'Microphone requires HTTPS. Please use the deployed site or localhost with HTTPS.'
+            }));
+            return false;
+        }
+
         try {
             // Resume AudioContext if suspended (required for user gesture in some browsers)
             if (audioContext.state === 'suspended') {
