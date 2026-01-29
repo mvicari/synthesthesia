@@ -10,13 +10,66 @@ interface KeyboardProps {
 }
 
 export const Keyboard: React.FC<KeyboardProps> = ({ notes, activeNotes, onPlay, onStop }) => {
+  // Track active touches to enable "sliding" across keys
+  const activeTouches = React.useRef<Map<number, number>>(new Map());
+
+  const getFrequencyFromPoint = (x: number, y: number) => {
+    const element = document.elementFromPoint(x, y);
+    const keyElement = element?.closest('[data-frequency]');
+    return keyElement ? parseFloat(keyElement.getAttribute('data-frequency') || '0') : null;
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    Array.from(e.changedTouches).forEach(touch => {
+      const freq = getFrequencyFromPoint(touch.clientX, touch.clientY);
+      if (freq) {
+        activeTouches.current.set(touch.identifier, freq);
+        onPlay(freq);
+      }
+    });
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    Array.from(e.changedTouches).forEach(touch => {
+      const oldFreq = activeTouches.current.get(touch.identifier);
+      const newFreq = getFrequencyFromPoint(touch.clientX, touch.clientY);
+
+      if (newFreq !== oldFreq) {
+        if (oldFreq) onStop(oldFreq);
+        if (newFreq) onPlay(newFreq);
+
+        if (newFreq) {
+          activeTouches.current.set(touch.identifier, newFreq);
+        } else {
+          activeTouches.current.delete(touch.identifier);
+        }
+      }
+    });
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    Array.from(e.changedTouches).forEach(touch => {
+      const freq = activeTouches.current.get(touch.identifier);
+      if (freq) {
+        onStop(freq);
+        activeTouches.current.delete(touch.identifier);
+      }
+    });
+  };
+
   return (
-    <div className="flex justify-center items-end h-32 md:h-48 w-full md:w-auto select-none relative bg-gray-900 p-2 md:p-4 rounded-t-xl shadow-2xl">
+    <div 
+      className="flex justify-center items-end h-32 md:h-48 w-full md:w-auto select-none relative bg-gray-900 p-2 md:p-4 rounded-t-xl shadow-2xl touch-none"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
+    >
       {notes.map((note) => {
         const isActive = activeNotes.has(note.frequency);
         const color = frequencyToHSL(note.frequency);
 
-        const baseClass = "relative border border-gray-900 rounded-b-md transition-all duration-100 cursor-pointer z-10 touch-none";
+        const baseClass = "relative border border-gray-900 rounded-b-md transition-all duration-100 cursor-pointer z-10";
 
         // White keys: Flex-1 allows them to shrink on mobile, max-w-12 keeps them looking like the original on desktop
         const whiteClass = `h-full flex-1 md:w-12 min-w-[20px] max-w-12 bg-white text-black hover:bg-gray-100 active:scale-95 origin-top ${isActive ? '!bg-gray-200 shadow-[0_0_20px_rgba(255,255,255,0.5)]' : ''}`;
@@ -30,6 +83,7 @@ export const Keyboard: React.FC<KeyboardProps> = ({ notes, activeNotes, onPlay, 
         return (
           <div
             key={note.note + note.frequency}
+            data-frequency={note.frequency}
             className={`${baseClass} ${isBlack ? blackClass : whiteClass}`}
             style={
               isBlack
@@ -39,9 +93,6 @@ export const Keyboard: React.FC<KeyboardProps> = ({ notes, activeNotes, onPlay, 
             onMouseDown={() => onPlay(note.frequency)}
             onMouseUp={() => onStop(note.frequency)}
             onMouseLeave={() => onStop(note.frequency)}
-            onTouchStart={(e) => { e.preventDefault(); onPlay(note.frequency); }}
-            onTouchEnd={(e) => { e.preventDefault(); onStop(note.frequency); }}
-            onTouchCancel={() => onStop(note.frequency)}
           >
             <span className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[8px] md:text-xs opacity-50 font-mono pointer-events-none mix-blend-difference">
               {note.key.toUpperCase()}
