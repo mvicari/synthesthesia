@@ -15,16 +15,16 @@ export const Keyboard: React.FC<KeyboardProps> = ({ notes, activeNotes, onPlay, 
       {notes.map((note) => {
         const isActive = activeNotes.has(note.frequency);
         const color = frequencyToHSL(note.frequency);
-        
+
         const baseClass = "relative border border-gray-900 rounded-b-md transition-all duration-100 cursor-pointer z-10 touch-none";
-        
+
         // White keys: Flex-1 allows them to shrink on mobile, max-w-12 keeps them looking like the original on desktop
         const whiteClass = `h-full flex-1 md:w-12 min-w-[20px] max-w-12 bg-white text-black hover:bg-gray-100 active:scale-95 origin-top ${isActive ? '!bg-gray-200 shadow-[0_0_20px_rgba(255,255,255,0.5)]' : ''}`;
-        
+
         // Black keys: Fixed widths relative to the responsive breakpoints. 
         // -mx-[X] pulls them over the white keys.
         const blackClass = `h-[60%] w-5 md:w-8 bg-black text-white -mx-[10px] md:-mx-4 z-20 hover:bg-gray-800 active:scale-95 origin-top ${isActive ? '!bg-gray-700 shadow-[0_0_15px_rgba(255,255,255,0.3)]' : ''}`;
-        
+
         const isBlack = note.type === 'black';
 
         return (
@@ -32,7 +32,7 @@ export const Keyboard: React.FC<KeyboardProps> = ({ notes, activeNotes, onPlay, 
             key={note.note + note.frequency}
             className={`${baseClass} ${isBlack ? blackClass : whiteClass}`}
             style={
-              isBlack 
+              isBlack
                 ? { backgroundColor: isActive ? color : undefined }
                 : { backgroundColor: isActive ? color : undefined }
             }
@@ -40,7 +40,8 @@ export const Keyboard: React.FC<KeyboardProps> = ({ notes, activeNotes, onPlay, 
             onMouseUp={() => onStop(note.frequency)}
             onMouseLeave={() => onStop(note.frequency)}
             onTouchStart={(e) => { e.preventDefault(); onPlay(note.frequency); }}
-            onTouchEnd={() => onStop(note.frequency)}
+            onTouchEnd={(e) => { e.preventDefault(); onStop(note.frequency); }}
+            onTouchCancel={() => onStop(note.frequency)}
           >
             <span className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[8px] md:text-xs opacity-50 font-mono pointer-events-none mix-blend-difference">
               {note.key.toUpperCase()}

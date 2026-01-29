@@ -172,9 +172,10 @@ function App() {
         <div
           className="absolute inset-0 z-[100] bg-black/80 backdrop-blur-md flex flex-col items-center justify-center cursor-pointer transition-opacity duration-500"
           onClick={handleStart}
+          onTouchEnd={(e) => { e.preventDefault(); handleStart(); }}
         >
-          <div className="p-8 border border-white/20 rounded-2xl bg-black/50 hover:bg-white/10 transition-colors group">
-            <h1 className="text-3xl font-light tracking-[0.5em] text-white mb-4 text-center group-hover:scale-105 transition-transform duration-300">
+          <div className="p-8 border border-white/20 rounded-2xl bg-black/50 hover:bg-white/10 transition-colors group max-w-[90vw]">
+            <h1 className="text-xl md:text-3xl font-light tracking-widest md:tracking-[0.5em] text-white mb-4 text-center group-hover:scale-105 transition-transform duration-300 break-words">
               SYNTHESTHESIA
             </h1>
             <p className="text-center text-white/50 font-mono text-sm tracking-widest group-hover:text-white transition-colors">
@@ -190,7 +191,7 @@ function App() {
         {/* Header */}
         <header className="p-4 md:p-8 flex justify-between items-start">
           <div>
-            <h1 className="text-2xl md:text-4xl font-thin tracking-[0.2em] uppercase text-white/90 drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">
+            <h1 className="text-xl md:text-4xl font-thin tracking-[0.2em] uppercase text-white/90 drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">
               Synthesthesia
             </h1>
             <p className="text-xs md:text-sm text-white/40 tracking-wider font-light mt-1 ml-1">
