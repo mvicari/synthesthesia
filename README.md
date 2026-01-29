@@ -81,4 +81,4 @@ Maps audio frequency directly to light frequency by doubling octaves (~40 times)
 ### The Mermikides Model (Psychology)
 Based on the research of **Dr. Milton Mermikides**, this mode prioritizes *perceptual* harmony. It maps the **Circle of Fifths** to the Color Wheel.
 * **Result:** Harmonically compatible notes (e.g., C and G) produce analogous colors (e.g., Red and Orange), regardless of their octave.
-* **Source:** [Music of Light and Colour (Lecture)](https://drive.google.com/open?id=1D4lj7Z1OFUMgPcNca914dqxUb75ZGOp-&usp=drive_fs)
+* **Source:** [Music of Light and Colour (Lecture)](https://www.youtube.com/live/U_qfzhXjziI)

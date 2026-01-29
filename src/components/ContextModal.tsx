@@ -89,7 +89,7 @@ export const ContextModal: React.FC<ContextModalProps> = ({ isOpen, onClose, mod
             {/* Links / Footer */}
             <div className="mt-10 flex flex-wrap gap-4 border-t border-white/5 pt-8">
               <a
-                href="https://drive.google.com/open?id=1D4lj7Z1OFUMgPcNca914dqxUb75ZGOp-&usp=drive_fs"
+                href="https://www.youtube.com/live/U_qfzhXjziI"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-[10px] font-bold tracking-widest text-white transition-all hover:bg-white/10"
