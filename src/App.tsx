@@ -125,12 +125,12 @@ function App() {
       <Visualizer ripples={ripples} activeNotes={activeNotes} pitchBend={pitchBend} />
       
       {/* Info Panel */}
-      <div className="absolute top-8 left-8 z-40 max-w-sm pointer-events-none select-none">
-        <div className="backdrop-blur-md bg-white/5 border border-white/10 p-6 rounded-2xl shadow-xl">
-          <h2 className="text-xl font-light text-white mb-2 tracking-wide border-b border-white/20 pb-2">
+      <div className="absolute top-4 left-4 md:top-8 md:left-8 z-40 max-w-[200px] md:max-w-sm pointer-events-none select-none">
+        <div className="backdrop-blur-md bg-white/5 border border-white/10 p-4 md:p-6 rounded-2xl shadow-xl transition-all">
+          <h2 className="text-sm md:text-xl font-light text-white mb-2 tracking-wide border-b border-white/20 pb-2">
             Sound-to-Color Synesthesia
           </h2>
-          <p className="text-sm text-gray-300 leading-relaxed font-light">
+          <p className="text-[10px] md:text-sm text-gray-300 leading-relaxed font-light hidden md:block">
             <span className="font-semibold text-white/80">Chromesthesia</span> is where sound evokes color. 
             <br className="mb-3 block"/>
             <span className="text-xs uppercase tracking-widest text-white/50 border-b border-white/10 pb-1 mb-1 block">The Math</span>
@@ -140,21 +140,24 @@ function App() {
             By doubling the sound frequency roughly <span className="font-mono text-blue-300">40 times</span> (moving up 40 musical octaves), 
             the wave oscillates fast enough to leave the audible spectrum and enter the visible light spectrum.
           </p>
+          <p className="text-[10px] text-gray-400 md:hidden">
+            (Desktop view for full info)
+          </p>
         </div>
       </div>
 
-      <div className="z-50 w-full max-w-5xl mx-auto mb-8 px-4">
-        <div className="mb-4 text-center">
-          <h1 className="text-4xl font-light tracking-[0.5em] text-white opacity-80 mix-blend-difference">
+      <div className="z-50 w-full max-w-5xl mx-auto mb-4 md:mb-8 px-2 md:px-4">
+        <div className="mb-2 md:mb-4 text-center">
+          <h1 className="text-2xl md:text-4xl font-light tracking-[0.3em] md:tracking-[0.5em] text-white opacity-80 mix-blend-difference">
             SYNTHESTHESIA
           </h1>
-          <p className="text-xs text-gray-400 mt-2 font-mono opacity-50">
-            PRESS KEYS [A-Z] OR CLICK
+          <p className="text-[10px] md:text-xs text-gray-400 mt-1 md:mt-2 font-mono opacity-50">
+            PRESS KEYS [A-Z] OR TAP
           </p>
         </div>
         
         {/* Controls Container */}
-        <div className="flex gap-4 items-end justify-center">
+        <div className="flex gap-2 md:gap-4 items-end justify-center w-full">
           <Wheels 
             onPitchBend={setPitchBend}
             pitchBend={pitchBend}
