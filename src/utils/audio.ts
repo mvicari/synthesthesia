@@ -4,7 +4,7 @@ export const useAudio = () => {
   const audioContext = useRef<AudioContext | null>(null);
   const masterGain = useRef<GainNode | null>(null);
   const analyser = useRef<AnalyserNode | null>(null);
-  
+
   // Active nodes storage
   const oscillators = useRef<Map<number, OscillatorNode>>(new Map());
   const gains = useRef<Map<number, GainNode>>(new Map());
@@ -16,11 +16,11 @@ export const useAudio = () => {
     if (!audioContext.current) {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       audioContext.current = new AudioCtx();
-      
+
       console.log("AudioContext created. State:", audioContext.current.state, "Sample Rate:", audioContext.current.sampleRate);
 
       masterGain.current = audioContext.current.createGain();
-      masterGain.current.gain.value = 0.3; 
+      masterGain.current.gain.value = 0.3;
 
       analyser.current = audioContext.current.createAnalyser();
       analyser.current.fftSize = 2048;
@@ -34,7 +34,7 @@ export const useAudio = () => {
       source.buffer = buffer;
       source.connect(audioContext.current.destination);
       source.start(0);
-      
+
       audioContext.current.resume().then(() => {
         console.log("AudioContext resumed. State:", audioContext.current?.state);
       });
@@ -49,10 +49,10 @@ export const useAudio = () => {
   const setPitchBend = useCallback((semitones: number) => {
     if (!audioContext.current) return;
     currentPitchBend.current = semitones;
-    
+
     // 1 semitone = 100 cents
     const detuneValue = semitones * 100;
-    
+
     oscillators.current.forEach((osc) => {
       osc.detune.setValueAtTime(detuneValue, audioContext.current!.currentTime);
     });
@@ -69,7 +69,7 @@ export const useAudio = () => {
     // 1. Create Nodes
     const osc = audioContext.current.createOscillator();
     const noteGain = audioContext.current.createGain();
-    
+
     // 2. Configure Main Oscillator
     osc.type = 'sine';
     osc.frequency.setValueAtTime(frequency, currentTime);
@@ -107,12 +107,12 @@ export const useAudio = () => {
       noteGain.gain.exponentialRampToValueAtTime(0.001, stopTime);
 
       osc.stop(stopTime);
-      
+
       setTimeout(() => {
         osc.disconnect();
         noteGain.disconnect();
       }, 200);
-      
+
       oscillators.current.delete(frequency);
       gains.current.delete(frequency);
     }
@@ -126,5 +126,5 @@ export const useAudio = () => {
     };
   }, []);
 
-  return { playTone, stopTone, initAudio, setPitchBend, analyser };
+  return { playTone, stopTone, initAudio, setPitchBend, analyser, audioContext };
 };

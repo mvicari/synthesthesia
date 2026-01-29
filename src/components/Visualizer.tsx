@@ -1,7 +1,10 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { frequencyToHSL, getMixColor, getLightStats } from '../utils/colors';
+import { frequencyToHSL, getMixColor, getLightStats, getHarmonicColor, getHarmonicPitchInfo } from '../utils/colors';
 import { NOTES } from '../utils/notes';
+
+export type VisualizerMode = 'synth' | 'mic';
+
 
 export interface Ripple {
   id: string;
@@ -15,17 +18,37 @@ interface VisualizerProps {
   activeNotes: Set<number>;
   pitchBend?: number;
   analyser?: AnalyserNode | null;
+  mode?: VisualizerMode;
+  micFrequency?: number;
+  micConfidence?: number;
 }
 
-export const Visualizer: React.FC<VisualizerProps> = ({ ripples, activeNotes, pitchBend = 0, analyser }) => {
+export const Visualizer: React.FC<VisualizerProps> = ({
+  ripples,
+  activeNotes,
+  pitchBend = 0,
+  analyser,
+  mode = 'synth',
+  micFrequency = 0,
+  micConfidence = 0,
+}) => {
   // Helper to calculate bent frequency
   const getBentFreq = (baseFreq: number) => baseFreq * Math.pow(2, pitchBend / 12);
-  
-  // Calculate blended chord color
-  const currentBentFreqs = Array.from(activeNotes).map(getBentFreq);
-  const blendColor = getMixColor(currentBentFreqs);
 
-  // Canvas for Waveform
+  // Calculate blended chord color based on mode
+  const currentBentFreqs = Array.from(activeNotes).map(getBentFreq);
+
+  // In mic mode, use harmonic (Circle of Fifths) color mapping
+  // In synth mode, use physics-based (octave doubling) color mapping
+  const blendColor = mode === 'mic'
+    ? (micFrequency > 0 ? getHarmonicColor(micFrequency) : 'transparent')
+    : getMixColor(currentBentFreqs);
+
+  // Determine if we should show visualizations (active notes OR mic input)
+  const hasActiveInput = mode === 'mic'
+    ? (micFrequency > 0 && micConfidence > 0.05)
+    : activeNotes.size > 0;
+
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
   React.useEffect(() => {
@@ -55,14 +78,14 @@ export const Visualizer: React.FC<VisualizerProps> = ({ ripples, activeNotes, pi
       // Clear but keep transparent
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // We only draw if there's sound
-      if (activeNotes.size === 0) return;
+      // We only draw if there's active input (synth notes or mic input)
+      if (!hasActiveInput) return;
 
       const width = canvas.width;
       const height = canvas.height;
 
       ctx.lineWidth = 2;
-      
+
       // 1. Draw "Light" Wave (High Frequency, Color)
       // We simulate light by drawing a wave that is much faster than the audio wave
       // The amplitude is modulated by the audio data
@@ -73,16 +96,16 @@ export const Visualizer: React.FC<VisualizerProps> = ({ ripples, activeNotes, pi
       ctx.shadowColor = blendColor;
 
       const lightFreqMult = 20; // Simulate "higher frequency"
-      
+
       for (let i = 0; i < bufferLength; i++) {
         const v = dataArray[i] / 128.0; // 0..2 (1 is center)
-        const y = v * height/2;
+        const y = v * height / 2;
         // Current slice percentage
         const x = (i / bufferLength) * width;
-        
+
         // Add high freq sine modulation
         const lightMod = Math.sin(i * lightFreqMult) * 50 * (Math.abs(v - 1)); // Amplitude scales with volume
-        
+
         if (i === 0) {
           ctx.moveTo(x, y + lightMod);
         } else {
@@ -90,7 +113,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({ ripples, activeNotes, pi
         }
       }
       ctx.stroke();
-      
+
       // Reset Shadow for next pass
       ctx.shadowBlur = 0;
 
@@ -123,13 +146,13 @@ export const Visualizer: React.FC<VisualizerProps> = ({ ripples, activeNotes, pi
       window.removeEventListener('resize', resizeCanvas);
       cancelAnimationFrame(animationId);
     };
-  }, [analyser, activeNotes, blendColor]);
+  }, [analyser, hasActiveInput, blendColor]);
 
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden bg-black z-0 perspective-[1000px]">
       {/* Deep Space / Aurora Background */}
       <div className="absolute inset-0 overflow-hidden">
-        <motion.div 
+        <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 120, ease: "linear", repeat: Infinity }}
           className="absolute w-[200%] h-[200%] -top-1/2 -left-1/2 opacity-30 mix-blend-screen"
@@ -142,19 +165,19 @@ export const Visualizer: React.FC<VisualizerProps> = ({ ripples, activeNotes, pi
 
       {/* Dynamic Background Pulse (Chord Color) */}
       <div className="absolute inset-0 flex items-center justify-center transition-colors duration-200 ease-linear">
-         {activeNotes.size > 0 && (
-           <div 
-             className="w-full h-full opacity-15 blur-3xl mix-blend-screen transition-all duration-300"
-             style={{ 
-               backgroundColor: blendColor,
-               transform: `scale(${1 + activeNotes.size * 0.05})`
-             }} 
-           />
-         )}
+        {hasActiveInput && (
+          <div
+            className="w-full h-full opacity-15 blur-3xl mix-blend-screen transition-all duration-300"
+            style={{
+              backgroundColor: blendColor,
+              transform: `scale(${1 + (mode === 'mic' ? micConfidence * 0.2 : activeNotes.size * 0.05)})`
+            }}
+          />
+        )}
       </div>
 
       {/* WAVEFORM CANVAS LAYER */}
-      <canvas 
+      <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full z-10 mix-blend-screen opacity-80"
       />
@@ -175,7 +198,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({ ripples, activeNotes, pi
                   className="absolute rounded-full border border-red-500/50 box-content mix-blend-screen"
                   style={{ left: ripple.x, top: ripple.y, width: '120px', height: '120px', x: '-50%', y: '-50%' }}
                 />
-                
+
                 {/* PRISM EFFECT: Blue Shift */}
                 <motion.div
                   initial={{ scale: 0, opacity: 0.5, borderWidth: '2px' }}
@@ -205,7 +228,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({ ripples, activeNotes, pi
                     background: `radial-gradient(circle, ${color} 0%, transparent 60%)`
                   }}
                 />
-                
+
                 {/* Secondary delayed ring for "echo" effect */}
                 <motion.div
                   initial={{ scale: 0, opacity: 0.4, borderWidth: '1px' }}
@@ -229,13 +252,13 @@ export const Visualizer: React.FC<VisualizerProps> = ({ ripples, activeNotes, pi
                   const angle = i * 60 * (Math.PI / 180);
                   const targetX = Math.cos(angle) * 300;
                   const targetY = Math.sin(angle) * 300;
-                  
+
                   return (
                     <motion.div
                       key={`${ripple.id}-p-${i}`}
                       initial={{ scale: 0, x: 0, y: 0 }}
-                      animate={{ 
-                        scale: [0, 1, 0], 
+                      animate={{
+                        scale: [0, 1, 0],
                         x: targetX,
                         y: targetY
                       }}
@@ -275,20 +298,59 @@ export const Visualizer: React.FC<VisualizerProps> = ({ ripples, activeNotes, pi
           })}
         </AnimatePresence>
       </div>
-      
+
       {/* Active Note Info Overlay */}
       <div className="absolute inset-x-0 top-[15%] flex flex-col items-center z-[60] pointer-events-none">
-        
-        {/* Chord Sum Indicator */}
+
+        {/* Mic Mode: Detected Pitch Display */}
         <AnimatePresence>
-          {activeNotes.size > 1 && (
+          {mode === 'mic' && micFrequency > 0 && micConfidence > 0.05 && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              className="mb-4 flex flex-col items-center justify-center p-6 rounded-2xl backdrop-blur-2xl bg-white/5 border border-white/20 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+            >
+              {(() => {
+                const pitchInfo = getHarmonicPitchInfo(micFrequency);
+                const harmonicColor = getHarmonicColor(micFrequency);
+                return (
+                  <>
+                    <div
+                      className="w-20 h-20 rounded-full shadow-[0_0_30px_currentColor] animate-pulse mb-3"
+                      style={{ backgroundColor: harmonicColor, color: harmonicColor }}
+                    />
+                    <span className="text-3xl font-light text-white tracking-widest mb-1">
+                      {pitchInfo.noteName}{pitchInfo.octave}
+                    </span>
+                    <span className="text-lg font-mono text-white/70">
+                      {micFrequency.toFixed(1)} Hz
+                    </span>
+                    <span className={`text-xs font-mono mt-1 ${Math.abs(pitchInfo.cents) < 10 ? 'text-green-400' :
+                      Math.abs(pitchInfo.cents) < 25 ? 'text-yellow-400' : 'text-red-400'
+                      }`}>
+                      {pitchInfo.cents >= 0 ? '+' : ''}{pitchInfo.cents} cents
+                    </span>
+                    <span className="mt-2 text-[10px] uppercase tracking-[0.2em] text-white/40 font-mono">
+                      Circle of Fifths • Harmonic
+                    </span>
+                  </>
+                );
+              })()}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Synth Mode: Chord Sum Indicator */}
+        <AnimatePresence>
+          {mode === 'synth' && activeNotes.size > 1 && (
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               className="mb-4 flex flex-col items-center justify-center p-4 rounded-full backdrop-blur-2xl bg-white/5 border border-white/20 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
             >
-              <div 
+              <div
                 className="w-16 h-16 rounded-full shadow-[0_0_20px_currentColor] animate-pulse"
                 style={{ backgroundColor: blendColor, color: blendColor }}
               />
@@ -299,8 +361,9 @@ export const Visualizer: React.FC<VisualizerProps> = ({ ripples, activeNotes, pi
           )}
         </AnimatePresence>
 
+        {/* Synth Mode: Individual Note Info */}
         <AnimatePresence>
-          {Array.from(activeNotes).map((freq) => {
+          {mode === 'synth' && Array.from(activeNotes).map((freq) => {
             const note = NOTES.find(n => n.frequency === freq);
             const bentFreq = getBentFreq(freq);
             const color = frequencyToHSL(bentFreq);
@@ -317,7 +380,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({ ripples, activeNotes, pi
               >
                 {/* Color Swatch / Note Name */}
                 <div className="flex items-center gap-3">
-                  <div 
+                  <div
                     className="w-3 h-3 rounded-full shadow-[0_0_10px_currentColor]"
                     style={{ backgroundColor: color, color: color }}
                   />
@@ -343,19 +406,20 @@ export const Visualizer: React.FC<VisualizerProps> = ({ ripples, activeNotes, pi
       {/* Sustained Active Note Orbs */}
       <div className="absolute inset-0 flex items-center justify-center">
         <AnimatePresence>
-          {Array.from(activeNotes).map((freq) => (
+          {/* Synth Mode: Multiple note orbs */}
+          {mode === 'synth' && Array.from(activeNotes).map((freq) => (
             <motion.div
               key={freq}
               initial={{ scale: 0.5, opacity: 0, filter: 'blur(20px)' }}
-              animate={{ 
+              animate={{
                 scale: [1, 1.3, 1.1],
                 opacity: 0.4,
                 filter: 'blur(60px)'
               }}
               exit={{ scale: 0, opacity: 0, filter: 'blur(10px)' }}
-              transition={{ 
-                duration: 0.3, 
-                scale: { repeat: Infinity, duration: 2, ease: "easeInOut" } 
+              transition={{
+                duration: 0.3,
+                scale: { repeat: Infinity, duration: 2, ease: "easeInOut" }
               }}
               className="absolute w-64 h-64 rounded-full mix-blend-screen"
               style={{
@@ -363,6 +427,27 @@ export const Visualizer: React.FC<VisualizerProps> = ({ ripples, activeNotes, pi
               }}
             />
           ))}
+          {/* Mic Mode: Single dynamic orb */}
+          {mode === 'mic' && micFrequency > 0 && micConfidence > 0.05 && (
+            <motion.div
+              key="mic-orb"
+              initial={{ scale: 0.5, opacity: 0, filter: 'blur(20px)' }}
+              animate={{
+                scale: [1, 1.2 + micConfidence * 0.3, 1.1],
+                opacity: 0.5,
+                filter: 'blur(60px)'
+              }}
+              exit={{ scale: 0, opacity: 0, filter: 'blur(10px)' }}
+              transition={{
+                duration: 0.3,
+                scale: { repeat: Infinity, duration: 1.5, ease: "easeInOut" }
+              }}
+              className="absolute w-72 h-72 rounded-full mix-blend-screen"
+              style={{
+                backgroundColor: getHarmonicColor(micFrequency),
+              }}
+            />
+          )}
         </AnimatePresence>
       </div>
     </div>

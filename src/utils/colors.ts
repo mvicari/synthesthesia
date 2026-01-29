@@ -3,7 +3,7 @@ const LIGHT_VELOCITY = 299792458; // m/s
 // Visible spectrum boundaries in Frequency (THz)
 // Red end (~780nm) is approx 384 THz
 // Violet end (~390nm) is approx 769 THz
-const MIN_VISIBLE_FREQ = 384e12; 
+const MIN_VISIBLE_FREQ = 384e12;
 const MAX_VISIBLE_FREQ = 768e12; // Exactly one octave up for clean wrapping
 
 // Helper: Scale Audio Hz to Light THz
@@ -67,7 +67,7 @@ export const getLightStats = (frequency: number) => {
   const wavelength = (LIGHT_VELOCITY / targetFreq) * 1e9;
   // Calculate how many octaves we traveled (log2 of the ratio)
   const octaveShift = Math.round(Math.log2(targetFreq / frequency));
-  
+
   return {
     frequencyTHz: targetFreq / 1e12,
     wavelengthNm: Math.round(wavelength),
@@ -89,11 +89,11 @@ export const frequencyToHSL = (frequency: number): string => {
 };
 
 export const frequencyToGlow = (frequency: number): string => {
-   const rgb = frequencyToRGB(frequency);
-   // Extract numbers to add alpha
-   const match = rgb.match(/\d+/g);
-   if (!match) return 'rgba(0,0,0,0.8)';
-   return `rgba(${match[0]}, ${match[1]}, ${match[2]}, 0.8)`;
+  const rgb = frequencyToRGB(frequency);
+  // Extract numbers to add alpha
+  const match = rgb.match(/\d+/g);
+  if (!match) return 'rgba(0,0,0,0.8)';
+  return `rgba(${match[0]}, ${match[1]}, ${match[2]}, 0.8)`;
 };
 
 export const getMixColor = (frequencies: number[]): string => {
@@ -105,7 +105,7 @@ export const getMixColor = (frequencies: number[]): string => {
   frequencies.forEach(freq => {
     // We parse the RGB string coming back from the main function
     const rgbStr = frequencyToRGB(freq);
-    const [r, g, b] = rgbStr.match(/\d+/g)?.map(Number) || [0,0,0];
+    const [r, g, b] = rgbStr.match(/\d+/g)?.map(Number) || [0, 0, 0];
     rTotal += r;
     gTotal += g;
     bTotal += b;
@@ -116,4 +116,94 @@ export const getMixColor = (frequencies: number[]): string => {
   const bAvg = Math.round(bTotal / frequencies.length);
 
   return `rgb(${rAvg}, ${gAvg}, ${bAvg})`;
+};
+
+/**
+ * Milton Mermikides' Harmonic Color Mapping using Circle of Fifths
+ * 
+ * This maps musical pitch to color based on harmonic relationships rather than
+ * the linear physics approach (octave doubling).
+ * 
+ * By multiplying the pitch class by 7 (the interval of a Perfect Fifth),
+ * harmonically related notes (like C & G) become visually adjacent neighbors
+ * on the color wheel, unlike the linear chromatic approach.
+ * 
+ * Pitch Classes (where C=0):
+ * C=0, C#=1, D=2, D#=3, E=4, F=5, F#=6, G=7, G#=8, A=9, A#=10, B=11
+ * 
+ * Circle of Fifths Order (hue progression):
+ * C → G → D → A → E → B → F# → C# → G# → D# → A# → F → C
+ */
+export const getHarmonicColor = (frequency: number, saturation: number = 85, lightness: number = 55): string => {
+  if (frequency <= 0) return 'hsl(0, 0%, 0%)';
+
+  // Convert Hz to MIDI note number
+  // n = 12 * log2(f / 440) + 69
+  const midiNote = 12 * Math.log2(frequency / 440) + 69;
+
+  // Get pitch class (0-11, where C=0)
+  // Round to nearest semitone for cleaner mapping
+  const pitchClass = Math.round(midiNote) % 12;
+
+  // Map to hue using Circle of Fifths
+  // Multiplying by 7 steps through the circle of fifths
+  // Each step is 30 degrees on the color wheel (360 / 12 = 30)
+  // The formula: Hue = ((pitchClass * 7) % 12) * 30
+  const hue = ((pitchClass * 7) % 12) * 30;
+
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+};
+
+/**
+ * Get detailed pitch information for display (harmonic mode)
+ */
+export const getHarmonicPitchInfo = (frequency: number) => {
+  if (frequency <= 0) {
+    return { noteName: '-', octave: 0, cents: 0, pitchClass: 0 };
+  }
+
+  const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+  // Convert to MIDI note
+  const midiNote = 12 * Math.log2(frequency / 440) + 69;
+  const roundedNote = Math.round(midiNote);
+
+  // Get pitch class and octave
+  const pitchClass = ((roundedNote % 12) + 12) % 12; // Ensure positive
+  const octave = Math.floor(roundedNote / 12) - 1;
+
+  // Calculate cents deviation from perfect pitch
+  const cents = Math.round((midiNote - roundedNote) * 100);
+
+  return {
+    noteName: noteNames[pitchClass],
+    octave,
+    cents,
+    pitchClass,
+  };
+};
+
+/**
+ * Get harmonic blend color for multiple frequencies
+ */
+export const getHarmonicMixColor = (frequencies: number[]): string => {
+  if (frequencies.length === 0) return 'transparent';
+  if (frequencies.length === 1) return getHarmonicColor(frequencies[0]);
+
+  // Average the hues on the color wheel (need to handle circular averaging)
+  let sinSum = 0;
+  let cosSum = 0;
+
+  frequencies.forEach(freq => {
+    const hsl = getHarmonicColor(freq);
+    const hueMatch = hsl.match(/hsl\((\d+)/);
+    const hue = hueMatch ? parseFloat(hueMatch[1]) : 0;
+    const radians = (hue * Math.PI) / 180;
+    sinSum += Math.sin(radians);
+    cosSum += Math.cos(radians);
+  });
+
+  const avgHue = ((Math.atan2(sinSum, cosSum) * 180) / Math.PI + 360) % 360;
+
+  return `hsl(${Math.round(avgHue)}, 85%, 55%)`;
 };
