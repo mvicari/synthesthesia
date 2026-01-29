@@ -3,6 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { frequencyToHSL, getMixColor, getLightStats } from '../utils/colors';
 import { NOTES } from '../utils/notes';
 
+export interface Ripple {
+  id: string;
+  frequency: number;
+  x: number;
+  y: number;
+}
+
 interface VisualizerProps {
   ripples: Ripple[];
   activeNotes: Set<number>;
