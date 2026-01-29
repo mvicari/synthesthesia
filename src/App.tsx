@@ -4,6 +4,7 @@ import { Keyboard } from './components/Keyboard';
 import { Visualizer, type Ripple, type VisualizerMode } from './components/Visualizer';
 import { Wheels } from './components/Wheels';
 import { NoteInfoCard } from './components/NoteInfoCard';
+import { AttributionModal } from './components/AttributionModal';
 import { useAudio } from './utils/audio';
 import { NOTES, type Note } from './utils/notes';
 
@@ -15,6 +16,7 @@ function App() {
   const [hasStarted, setHasStarted] = useState(false);
   const [mode, setMode] = useState<VisualizerMode>('synth');
   const [mobileInfoOpen, setMobileInfoOpen] = useState(false);
+  const [isAttributionOpen, setIsAttributionOpen] = useState(false);
 
   // Update Audio Engine when UI state changes
   useEffect(() => {
@@ -206,37 +208,47 @@ function App() {
           </div>
 
           {/* Mode Toggle Switch */}
-          <div className="pointer-events-auto flex flex-col items-end">
+          <div className="pointer-events-auto flex items-start gap-2">
+            <div className="flex flex-col items-end">
+              <button
+                onClick={handleModeToggle}
+                className={`
+                  px-4 py-2 rounded-full border border-white/20 backdrop-blur-md 
+                  text-xs font-mono tracking-widest uppercase transition-all duration-300
+                  hover:bg-white/10 active:scale-95
+                  ${mode === 'mic' ? 'shadow-[0_0_20px_rgba(236,72,153,0.3)] bg-pink-500/10 border-pink-500/30' : 'shadow-[0_0_20px_rgba(255,255,255,0.1)] bg-white/5'}
+                `}
+              >
+                <span className="flex items-center gap-2">
+                  {mode === 'synth' ? (
+                    <>
+                      <span className="text-base md:text-lg">🎹</span>
+                      <span className="hidden sm:inline">PHYSICS</span>
+                      <span className="text-blue-300/40">•</span>
+                      <span className="opacity-70">Octave Doubling</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-base md:text-lg">🎨</span>
+                      <span className="hidden sm:inline">HARMONIC</span>
+                      <span className="text-pink-300/40">•</span>
+                      <span className="opacity-70">Circle of Fifths</span>
+                    </>
+                  )}
+                </span>
+              </button>
+              <p className="text-[8px] md:text-[10px] text-white/30 font-mono mt-1 text-center">
+                Press [M] to toggle
+              </p>
+            </div>
+
             <button
-              onClick={handleModeToggle}
-              className={`
-                px-4 py-2 rounded-full border border-white/20 backdrop-blur-md 
-                text-xs font-mono tracking-widest uppercase transition-all duration-300
-                hover:bg-white/10 active:scale-95
-                ${mode === 'mic' ? 'shadow-[0_0_20px_rgba(236,72,153,0.3)] bg-pink-500/10 border-pink-500/30' : 'shadow-[0_0_20px_rgba(255,255,255,0.1)] bg-white/5'}
-              `}
+              onClick={() => setIsAttributionOpen(true)}
+              className="mt-1 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/40 transition-all hover:bg-white/10 hover:text-white"
+              title="Theory & Credits"
             >
-              <span className="flex items-center gap-2">
-                {mode === 'synth' ? (
-                  <>
-                    <span className="text-base md:text-lg">🎹</span>
-                    <span className="hidden sm:inline">PHYSICS</span>
-                    <span className="text-blue-300/40">•</span>
-                    <span className="opacity-70">Octave Doubling</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="text-base md:text-lg">🎨</span>
-                    <span className="hidden sm:inline">HARMONIC</span>
-                    <span className="text-pink-300/40">•</span>
-                    <span className="opacity-70">Circle of Fifths</span>
-                  </>
-                )}
-              </span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
             </button>
-            <p className="text-[8px] md:text-[10px] text-white/30 font-mono mt-1 text-center">
-              Press [M] to toggle
-            </p>
           </div>
         </header>
 
@@ -340,6 +352,11 @@ function App() {
         activeNotes={activeNotes}
         pitchBend={pitchBend}
         mode={mode}
+      />
+
+      <AttributionModal
+        isOpen={isAttributionOpen}
+        onClose={() => setIsAttributionOpen(false)}
       />
     </div >
   );
