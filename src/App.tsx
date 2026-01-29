@@ -151,7 +151,7 @@ function App() {
         </div>
       </div>
 
-      <div className="z-50 w-full mb-4 px-2 md:px-4">
+      <div className="z-50 w-full max-w-5xl mx-auto mb-4 md:mb-8 px-2 md:px-4">
         <div className="mb-2 md:mb-4 text-center">
           <h1 className="text-2xl md:text-4xl font-light tracking-[0.3em] md:tracking-[0.5em] text-white opacity-80 mix-blend-difference">
             SYNTHESTHESIA
@@ -162,7 +162,7 @@ function App() {
         </div>
         
         {/* Controls Container */}
-        <div className="flex gap-2 md:gap-6 items-end justify-center w-full max-w-none">
+        <div className="flex gap-2 md:gap-4 items-end justify-center w-full">
           <Wheels 
             onPitchBend={setPitchBend}
             pitchBend={pitchBend}

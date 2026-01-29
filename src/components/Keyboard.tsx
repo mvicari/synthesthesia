@@ -11,16 +11,19 @@ interface KeyboardProps {
 
 export const Keyboard: React.FC<KeyboardProps> = ({ notes, activeNotes, onPlay, onStop }) => {
   return (
-    <div className="flex justify-center items-end h-32 md:h-44 w-full select-none relative overflow-visible">
+    <div className="flex justify-center items-end h-32 md:h-48 w-full md:w-auto select-none relative bg-gray-900 p-2 md:p-4 rounded-t-xl shadow-2xl">
       {notes.map((note) => {
         const isActive = activeNotes.has(note.frequency);
         const color = frequencyToHSL(note.frequency);
         
-        const baseClass = "relative border border-black/20 rounded-b-lg transition-all duration-100 cursor-pointer z-10 touch-none shrink-0";
-        // White keys: in-between width (w-10 md, w-7 mobile)
-        const whiteClass = `h-full w-7 md:w-10 bg-white/90 backdrop-blur-sm text-black hover:bg-white active:scale-95 origin-top shadow-lg ${isActive ? '!bg-gray-200' : ''}`;
-        // Black keys: refined width and negative margin for the new scale
-        const blackClass = `h-[60%] w-5 md:w-7 bg-zinc-900 text-white -mx-[10px] md:-mx-[14px] z-20 hover:bg-black active:scale-95 origin-top shadow-xl ${isActive ? '!bg-zinc-700' : ''}`;
+        const baseClass = "relative border border-gray-900 rounded-b-md transition-all duration-100 cursor-pointer z-10 touch-none";
+        
+        // White keys: Flex-1 allows them to shrink on mobile, max-w-12 keeps them looking like the original on desktop
+        const whiteClass = `h-full flex-1 md:w-12 min-w-[20px] max-w-12 bg-white text-black hover:bg-gray-100 active:scale-95 origin-top ${isActive ? '!bg-gray-200 shadow-[0_0_20px_rgba(255,255,255,0.5)]' : ''}`;
+        
+        // Black keys: Fixed widths relative to the responsive breakpoints. 
+        // -mx-[X] pulls them over the white keys.
+        const blackClass = `h-[60%] w-5 md:w-8 bg-black text-white -mx-[10px] md:-mx-4 z-20 hover:bg-gray-800 active:scale-95 origin-top ${isActive ? '!bg-gray-700 shadow-[0_0_15px_rgba(255,255,255,0.3)]' : ''}`;
         
         const isBlack = note.type === 'black';
 
@@ -28,14 +31,18 @@ export const Keyboard: React.FC<KeyboardProps> = ({ notes, activeNotes, onPlay, 
           <div
             key={note.note + note.frequency}
             className={`${baseClass} ${isBlack ? blackClass : whiteClass}`}
-            style={{ backgroundColor: isActive ? color : undefined }}
+            style={
+              isBlack 
+                ? { backgroundColor: isActive ? color : undefined }
+                : { backgroundColor: isActive ? color : undefined }
+            }
             onMouseDown={() => onPlay(note.frequency)}
             onMouseUp={() => onStop(note.frequency)}
             onMouseLeave={() => onStop(note.frequency)}
             onTouchStart={(e) => { e.preventDefault(); onPlay(note.frequency); }}
             onTouchEnd={() => onStop(note.frequency)}
           >
-            <span className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[8px] md:text-[10px] opacity-30 font-mono pointer-events-none mix-blend-difference">
+            <span className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[8px] md:text-xs opacity-50 font-mono pointer-events-none mix-blend-difference">
               {note.key.toUpperCase()}
             </span>
           </div>
