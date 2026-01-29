@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-  // Use '/synthesthesia/' for GitHub Pages (matches repo name)
-  // Use '/' for custom domain or local dev
-  base: '/synthesthesia/',
+  // Use '/' for custom domain (synthesthesia.mvicari.com)
+  // Use '/synthesthesia/' only for github.io subpath
+  base: '/',
 })
