@@ -10,6 +10,7 @@ function App() {
   const [activeNotes, setActiveNotes] = useState<Set<number>>(new Set());
   const [ripples, setRipples] = useState<Ripple[]>([]);
   const [pitchBend, setPitchBend] = useState(0); // -2 to 2 semitones
+  const [hasStarted, setHasStarted] = useState(false);
 
   // Update Audio Engine when UI state changes
   useEffect(() => {
@@ -36,7 +37,15 @@ function App() {
     }, 2000);
   }, []);
 
+  const handleStart = useCallback(() => {
+    initAudio();
+    setHasStarted(true);
+  }, [initAudio]);
+
   const handlePlay = useCallback((frequency: number) => {
+    if (!hasStarted) {
+      handleStart();
+    }
     initAudio(); 
     playTone(frequency);
     setActiveNotes(prev => {
@@ -45,7 +54,7 @@ function App() {
       return newSet;
     });
     addRipple(frequency);
-  }, [playTone, initAudio, addRipple]);
+  }, [playTone, initAudio, addRipple, hasStarted, handleStart]);
 
   const handleStop = useCallback((frequency: number) => {
     stopTone(frequency);
@@ -119,9 +128,33 @@ function App() {
   }, []);
 
   return (
-    <div className="relative w-screen h-screen bg-black flex flex-col justify-end overflow-hidden"
-         onClick={initAudio} 
-    >
+    <div className="relative w-screen h-screen bg-black flex flex-col justify-end overflow-hidden">
+      
+      {/* Start Overlay */}
+      {!hasStarted && (
+        <div 
+          className="absolute inset-0 z-[100] bg-black/80 backdrop-blur-md flex flex-col items-center justify-center cursor-pointer transition-opacity duration-500"
+          onClick={handleStart}
+        >
+          <div className="p-8 border border-white/20 rounded-2xl bg-black/50 hover:bg-white/10 transition-colors group">
+            <h1 className="text-3xl font-light tracking-[0.5em] text-white mb-4 text-center group-hover:scale-105 transition-transform duration-300">
+              SYNTHESTHESIA
+            </h1>
+            <p className="text-center text-white/50 font-mono text-sm tracking-widest group-hover:text-white transition-colors">
+              TAP TO ENTER
+            </p>
+          </div>
+        </div>
+      )}
+
+      <Visualizer 
+        ripples={ripples} 
+        activeNotes={activeNotes} 
+        pitchBend={pitchBend} 
+        analyser={analyser.current} 
+      />
+      
+      {/* Info Panel */}
       <Visualizer 
         ripples={ripples} 
         activeNotes={activeNotes} 
