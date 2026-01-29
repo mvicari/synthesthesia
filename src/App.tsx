@@ -38,9 +38,11 @@ function App() {
   }, []);
 
   const handleStart = useCallback(() => {
+    if (hasStarted) return;
+    console.log("Starting app...");
     initAudio();
     setHasStarted(true);
-  }, [initAudio]);
+  }, [initAudio, hasStarted]);
 
   const handlePlay = useCallback((frequency: number) => {
     if (!hasStarted) {
@@ -128,13 +130,14 @@ function App() {
   }, []);
 
   return (
-    <div className="relative w-screen h-screen bg-black flex flex-col justify-end overflow-hidden">
+    <div className="fixed inset-0 bg-black flex flex-col justify-end overflow-hidden w-full h-full">
       
       {/* Start Overlay */}
       {!hasStarted && (
         <div 
           className="absolute inset-0 z-[100] bg-black/80 backdrop-blur-md flex flex-col items-center justify-center cursor-pointer transition-opacity duration-500"
           onClick={handleStart}
+          onTouchStart={handleStart}
         >
           <div className="p-8 border border-white/20 rounded-2xl bg-black/50 hover:bg-white/10 transition-colors group">
             <h1 className="text-3xl font-light tracking-[0.5em] text-white mb-4 text-center group-hover:scale-105 transition-transform duration-300">
@@ -147,14 +150,6 @@ function App() {
         </div>
       )}
 
-      <Visualizer 
-        ripples={ripples} 
-        activeNotes={activeNotes} 
-        pitchBend={pitchBend} 
-        analyser={analyser.current} 
-      />
-      
-      {/* Info Panel */}
       <Visualizer 
         ripples={ripples} 
         activeNotes={activeNotes} 
@@ -184,9 +179,9 @@ function App() {
         </div>
       </div>
 
-      <div className="z-50 w-full max-w-5xl mx-auto mb-4 md:mb-8 px-2 md:px-4">
+      <div className="z-50 w-full max-w-5xl mx-auto mb-4 md:mb-8 px-2 md:px-4 overflow-hidden">
         <div className="mb-2 md:mb-4 text-center">
-          <h1 className="text-2xl md:text-4xl font-light tracking-[0.3em] md:tracking-[0.5em] text-white opacity-80 mix-blend-difference">
+          <h1 className="text-xl sm:text-2xl md:text-4xl font-light tracking-tight sm:tracking-[0.3em] md:tracking-[0.5em] text-white opacity-80 mix-blend-difference truncate">
             SYNTHESTHESIA
           </h1>
           <p className="text-[10px] md:text-xs text-gray-400 mt-1 md:mt-2 font-mono opacity-50">
@@ -195,7 +190,7 @@ function App() {
         </div>
         
         {/* Controls Container */}
-        <div className="flex gap-2 md:gap-4 items-end justify-center w-full">
+        <div className="flex gap-1 md:gap-4 items-end justify-center w-full max-w-full overflow-hidden">
           <Wheels 
             onPitchBend={setPitchBend}
             pitchBend={pitchBend}

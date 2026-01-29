@@ -14,20 +14,35 @@ export const useAudio = () => {
 
   const initAudio = useCallback(() => {
     if (!audioContext.current) {
-      audioContext.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      audioContext.current = new AudioCtx();
       
+      console.log("AudioContext created. State:", audioContext.current.state, "Sample Rate:", audioContext.current.sampleRate);
+
       masterGain.current = audioContext.current.createGain();
       masterGain.current.gain.value = 0.3; 
 
       analyser.current = audioContext.current.createAnalyser();
-      analyser.current.fftSize = 2048; // Higher res for waveform
+      analyser.current.fftSize = 2048;
 
-      // Master -> Analyser -> Destination
       masterGain.current.connect(analyser.current);
       analyser.current.connect(audioContext.current.destination);
 
-    } else if (audioContext.current.state === 'suspended') {
-      audioContext.current.resume();
+      // iOS Unlock: Play a silent buffer
+      const buffer = audioContext.current.createBuffer(1, 1, 22050);
+      const source = audioContext.current.createBufferSource();
+      source.buffer = buffer;
+      source.connect(audioContext.current.destination);
+      source.start(0);
+      
+      audioContext.current.resume().then(() => {
+        console.log("AudioContext resumed. State:", audioContext.current?.state);
+      });
+
+    } else if (audioContext.current.state !== 'running') {
+      audioContext.current.resume()
+        .then(() => console.log("AudioContext resumed from state:", audioContext.current?.state))
+        .catch(e => console.error("Audio resume failed:", e));
     }
   }, []);
 
@@ -65,8 +80,10 @@ export const useAudio = () => {
     noteGain.connect(masterGain.current);
 
     // 4. Envelope: Attack
-    noteGain.gain.setValueAtTime(0, currentTime);
-    noteGain.gain.linearRampToValueAtTime(1, currentTime + 0.05);
+    noteGain.gain.setValueAtTime(0.001, currentTime);
+    noteGain.gain.exponentialRampToValueAtTime(1, currentTime + 0.05);
+
+    console.log(`Playing ${frequency}Hz at context time: ${currentTime.toFixed(3)}`);
 
     // 5. Start
     osc.start();

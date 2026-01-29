@@ -128,15 +128,17 @@ export const Visualizer: React.FC<VisualizerProps> = ({ ripples, activeNotes, pi
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden bg-black z-0 perspective-[1000px]">
       {/* Deep Space / Aurora Background */}
-      <motion.div 
-        animate={{ rotate: 360 }}
-        transition={{ duration: 120, ease: "linear", repeat: Infinity }}
-        className="absolute inset-[-50%] opacity-30 mix-blend-screen"
-        style={{
-          background: `conic-gradient(from 0deg, ${blendColor} 0%, transparent 40%, ${blendColor} 80%, transparent 100%)`,
-          filter: 'blur(100px)',
-        }}
-      />
+      <div className="absolute inset-0 overflow-hidden">
+        <motion.div 
+          animate={{ rotate: 360 }}
+          transition={{ duration: 120, ease: "linear", repeat: Infinity }}
+          className="absolute w-[200%] h-[200%] -top-1/2 -left-1/2 opacity-30 mix-blend-screen"
+          style={{
+            background: `conic-gradient(from 0deg, ${blendColor} 0%, transparent 40%, ${blendColor} 80%, transparent 100%)`,
+            filter: 'blur(100px)',
+          }}
+        />
+      </div>
 
       {/* Dynamic Background Pulse (Chord Color) */}
       <div className="absolute inset-0 flex items-center justify-center transition-colors duration-200 ease-linear">
