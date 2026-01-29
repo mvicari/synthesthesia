@@ -1,4 +1,3 @@
-import { NOTES } from './notes';
 
 export interface ChordResult {
     root: string;
