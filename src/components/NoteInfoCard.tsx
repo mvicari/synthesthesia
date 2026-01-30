@@ -81,8 +81,11 @@ export const NoteInfoCard: React.FC<NoteInfoCardProps> = ({
                                                 <>{pitchInfo.noteName}<span className="text-2xl md:text-4xl text-white/50 align-top ml-1">{pitchInfo.octave}</span></>
                                             )}
                                         </span>
-                                        <span className="text-lg font-mono text-white/70">
-                                            {primaryFrequency.toFixed(1)} Hz
+                                        <span className="text-sm md:text-lg font-mono text-white/70 text-center max-w-xs md:max-w-xl">
+                                            {allActiveFreqs.length > 1 
+                                                ? allActiveFreqs.sort((a,b) => a-b).map(f => f.toFixed(1)).join(' + ') + ' Hz'
+                                                : `${primaryFrequency.toFixed(1)} Hz`
+                                            }
                                         </span>
                                         {allActiveFreqs.length === 1 && Math.abs(pitchInfo.cents) >= 1 && (
                                             <span className={`text-xs font-mono mt-1 ${Math.abs(pitchInfo.cents) < 10 ? 'text-green-400' :
@@ -117,11 +120,17 @@ export const NoteInfoCard: React.FC<NoteInfoCardProps> = ({
                                                 )
                                             ) : (note?.note || '?')}
                                         </span>
-                                        <span className="text-lg font-mono text-white/70">
-                                            {primaryFrequency.toFixed(1)} Hz → {wavelengthNm} nm
+                                        <span className="text-sm md:text-lg font-mono text-white/70 text-center max-w-xs md:max-w-xl">
+                                            {allActiveFreqs.length > 1 
+                                                ? allActiveFreqs.sort((a,b) => a-b).map(f => f.toFixed(1)).join(' + ') + ' Hz'
+                                                : `${primaryFrequency.toFixed(1)} Hz → ${wavelengthNm} nm`
+                                            }
                                         </span>
                                         <span className="text-xs font-mono text-white/50 mt-1">
-                                            {frequencyTHz.toFixed(1)} THz (↑{octaveShift} octaves)
+                                            {allActiveFreqs.length > 1 
+                                                ? `Additive Spectral Blending (↑${octaveShift} octaves)`
+                                                : `${frequencyTHz.toFixed(1)} THz (↑${octaveShift} octaves)`
+                                            }
                                         </span>
                                         <span className="mt-2 text-[10px] uppercase tracking-[0.2em] text-white/40 font-mono">
                                             F# to F Spectral Octave • Dorian Scale
