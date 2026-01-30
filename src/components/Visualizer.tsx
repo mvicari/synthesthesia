@@ -192,8 +192,62 @@ export const Visualizer: React.FC<VisualizerProps> = ({
             const color = mode === 'harmonic' ? getHarmonicColor(freq) : frequencyToRGB(freq);
             const noteOpacity = getOpacity(freq);
             const rippleScale = 4 + (amplitude * 8);
-            const isRippleSaw = ripple.waveform === 'sawtooth' || ripple.waveform === 'square';
-            const points = ripple.waveform === 'square' ? 4 : 3;
+
+            // Generate waveform-based ripple paths
+            const generateWaveformPath = () => {
+              const centerX = 50;
+              const centerY = 50;
+              const baseRadius = 35;
+              const waveAmplitude = 8;
+              const segments = 64;
+
+              if (ripple.waveform === 'sine') {
+                // SINE: Smooth circle with subtle wave
+                return Array.from({ length: segments + 1 }, (_, i) => {
+                  const angle = (i / segments) * Math.PI * 2;
+                  const wave = Math.sin(angle * 4) * waveAmplitude;
+                  const r = baseRadius + wave;
+                  const x = centerX + Math.cos(angle) * r;
+                  const y = centerY + Math.sin(angle) * r;
+                  return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
+                }).join(' ') + ' Z';
+              } else if (ripple.waveform === 'square') {
+                // SQUARE: Square wave pattern wrapped in circle
+                return Array.from({ length: segments + 1 }, (_, i) => {
+                  const angle = (i / segments) * Math.PI * 2;
+                  // Square wave: flat sections with sharp transitions
+                  const normalized = (angle / (Math.PI * 2)) * 4; // 4 cycles
+                  const phase = normalized % 1;
+                  let waveOffset = 0;
+                  if (phase < 0.5) {
+                    waveOffset = waveAmplitude; // High
+                  } else {
+                    waveOffset = -waveAmplitude; // Low
+                  }
+                  const r = baseRadius + waveOffset;
+                  const x = centerX + Math.cos(angle) * r;
+                  const y = centerY + Math.sin(angle) * r;
+                  return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
+                }).join(' ') + ' Z';
+              } else {
+                // SAWTOOTH: Sawtooth pattern - gradual rise, sharp drop
+                return Array.from({ length: segments + 1 }, (_, i) => {
+                  const angle = (i / segments) * Math.PI * 2;
+                  // Sawtooth: linear rise, sudden fall
+                  const normalized = (angle / (Math.PI * 2)) * 3; // 3 cycles
+                  const phase = normalized % 1;
+                  // Gradual climb from -amplitude to +amplitude, then sharp drop
+                  const waveOffset = (phase * 2 - 1) * waveAmplitude;
+                  const r = baseRadius + waveOffset;
+                  const x = centerX + Math.cos(angle) * r;
+                  const y = centerY + Math.sin(angle) * r;
+                  return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
+                }).join(' ') + ' Z';
+              }
+            };
+
+            const pathD = generateWaveformPath();
+            const isSaw = ripple.waveform === 'sawtooth' || ripple.waveform === 'square';
 
             return (
               <React.Fragment key={ripple.id}>
@@ -202,7 +256,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({
                   animate={{
                     scale: rippleScale,
                     opacity: 0,
-                    rotate: isRippleSaw ? [0, 90] : 0,
+                    rotate: isSaw ? [0, 45] : 0,
                   }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 1.5, ease: "easeOut" }}
@@ -215,39 +269,18 @@ export const Visualizer: React.FC<VisualizerProps> = ({
                   }}
                 >
                   <svg width="100" height="100" viewBox="0 0 100 100" style={{ overflow: 'visible' }}>
-                    {isRippleSaw ? (
-                      // SAWTOOTH: Jagged polygon (Kiki)
-                      <motion.path
-                        d={Array.from({ length: points }, (_, i) => {
-                          const angle = (i / points) * Math.PI * 2 - Math.PI / 2;
-                          const r = 40;
-                          const x = 50 + Math.cos(angle) * r;
-                          const y = 50 + Math.sin(angle) * r;
-                          return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
-                        }).join(' ') + ' Z'}
-                        fill="none"
-                        stroke={color}
-                        strokeWidth="2"
-                        style={{
-                          filter: `drop-shadow(0 0 ${10 + amplitude * 30}px ${color})`,
-                          opacity: noteOpacity,
-                        }}
-                      />
-                    ) : (
-                      // SINE: Smooth circle (Bouba)
-                      <motion.circle
-                        cx="50"
-                        cy="50"
-                        r="40"
-                        fill="none"
-                        stroke={color}
-                        strokeWidth="2"
-                        style={{
-                          filter: `drop-shadow(0 0 ${10 + amplitude * 30}px ${color})`,
-                          opacity: noteOpacity,
-                        }}
-                      />
-                    )}
+                    <motion.path
+                      d={pathD}
+                      fill="none"
+                      stroke={color}
+                      strokeWidth={ripple.waveform === 'sine' ? 2.5 : 2}
+                      strokeLinecap="round"
+                      strokeLinejoin={ripple.waveform === 'sine' ? 'round' : 'miter'}
+                      style={{
+                        filter: `drop-shadow(0 0 ${10 + amplitude * 30}px ${color})`,
+                        opacity: noteOpacity,
+                      }}
+                    />
                   </svg>
                 </motion.div>
               </React.Fragment>
