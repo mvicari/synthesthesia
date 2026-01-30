@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 /**
@@ -28,6 +28,16 @@ interface BoubaKikiTutorialProps {
 }
 
 export const BoubaKikiTutorial: React.FC<BoubaKikiTutorialProps> = ({ isOpen, onClose }) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
   const [activeShape, setActiveShape] = useState<'bouba' | 'kiki' | null>(null);
 
   return (

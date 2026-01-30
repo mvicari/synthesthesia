@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ContextModalProps {
@@ -9,6 +9,17 @@ interface ContextModalProps {
 
 export const ContextModal: React.FC<ContextModalProps> = ({ isOpen, onClose, mode }) => {
   const isPhysics = mode === 'physics';
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   return (
     <AnimatePresence>
