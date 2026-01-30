@@ -59,11 +59,11 @@ export const ContextModal: React.FC<ContextModalProps> = ({ isOpen, onClose, mod
                 <p className="text-sm leading-relaxed text-gray-300 font-light">
                   {isPhysics ? (
                     <>
-                      In his 1704 work <em className="text-white italic">Opticks</em>, Sir Isaac Newton proposed a direct link between the spectrum of light and the musical scale. He even arbitrarily added "Orange" and "Indigo" to the rainbow to force it to have 7 distinct colors, matching the 7 notes of the Western major scale.
+                      In his 1704 work <em className="text-white italic">Opticks</em>, Sir Isaac Newton proposed a direct link between the spectrum of light and the musical scale. He even explicitly forced the rainbow to have <strong className="text-white">7 colors</strong> (adding Orange and Indigo) to create a mathematical correspondence with the 7 notes of the <strong className="text-white">Dorian</strong> musical scale.
                     </>
                   ) : (
                     <>
-                      Based on the modern research of <strong className="text-white font-medium">Dr. Milton Mermikides</strong>, this model argues that we hear music in circles, not straight lines. It prioritizes perceptual harmony over physical frequency.
+                      Based on the modern research into <strong className="text-white">perceptual synesthesia</strong> by <strong className="text-white font-medium">Dr. Milton Mermikides</strong>, this model argues that we hear music in circles, not straight lines. It prioritizes perceptual harmony over physical frequency.
                     </>
                   )}
                 </p>
@@ -75,11 +75,11 @@ export const ContextModal: React.FC<ContextModalProps> = ({ isOpen, onClose, mod
                 <p className="text-sm leading-relaxed text-gray-300 font-light">
                   {isPhysics ? (
                     <>
-                      This mode follows that linear logic. It takes the audio frequency and doubles it ~40 times (raising it 40 octaves) until the sound wave becomes a light wave. While mathematically accurate, it ignores musical perception—separating the "Low C" (Red) from the "High C" (Violet).
+                      This mode follows a linear logic ($f \cdot 2^{40}$). It takes the audio frequency and doubles it ~40 times until the sound wave becomes a light wave in the Terahertz range. While mathematically accurate, it separates "Low C" (Red) from "High C" (Violet).
                     </>
                   ) : (
                     <>
-                      This mode maps the <strong className="text-white font-medium">Circle of Fifths</strong> to the Color Wheel. This ensures that harmonically compatible notes (like C and G) result in analogous colors (Red and Orange), creating a visual experience that feels as consonant as the audio.
+                      This mode maps the <strong className="text-white font-medium">Circle of Fifths</strong> to the Color Wheel. This ensures that harmonically related notes (visual consonance) appear as <strong className="text-white">analogous colors</strong> on the spectrum, regardless of their octave.
                     </>
                   )}
                 </p>
@@ -112,7 +112,7 @@ export const ContextModal: React.FC<ContextModalProps> = ({ isOpen, onClose, mod
               ) : (
                 <>
                   <a
-                    href="https://www.youtube.com/live/U_qfzhXjziI"
+                    href="https://www.youtube.com/watch?v=M9xN9M0fS0o"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-[10px] font-bold tracking-widest text-white transition-all hover:bg-white/10"

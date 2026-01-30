@@ -119,6 +119,12 @@ export const getMixColor = (frequencies: number[]): string => {
 };
 
 /**
+ * Scriabin/Mermikides Lookup Table (LUT) for Circle of Fifths
+ * Index 0 corresponds to C (Red), moving by Perfect Fifths.
+ */
+const SCRIABIN_HUES = [0, 30, 60, 120, 210, 260, 285, 315, 330, 340, 350, 355];
+
+/**
  * Milton Mermikides' Harmonic Color Mapping using Circle of Fifths
  * 
  * This maps musical pitch to color based on harmonic relationships rather than
@@ -126,30 +132,22 @@ export const getMixColor = (frequencies: number[]): string => {
  * 
  * By multiplying the pitch class by 7 (the interval of a Perfect Fifth),
  * harmonically related notes (like C & G) become visually adjacent neighbors
- * on the color wheel, unlike the linear chromatic approach.
+ * on the color wheel.
  * 
- * Pitch Classes (where C=0):
- * C=0, C#=1, D=2, D#=3, E=4, F=5, F#=6, G=7, G#=8, A=9, A#=10, B=11
- * 
- * Circle of Fifths Order (hue progression):
- * C → G → D → A → E → B → F# → C# → G# → D# → A# → F → C
+ * Logic Check:
+ * - Note A (PC 9) -> Index (9*7)%12 = 3 -> 120° (Green)
+ * - Note E (PC 4) -> Index (4*7)%12 = 4 -> 210° (Blue)
+ * - Note F# (PC 6) -> Index (6*7)%12 = 6 -> 285° (Violet)
  */
 export const getHarmonicColor = (frequency: number, saturation: number = 85, lightness: number = 55): string => {
   if (frequency <= 0) return 'hsl(0, 0%, 0%)';
 
-  // Convert Hz to MIDI note number
-  // n = 12 * log2(f / 440) + 69
   const midiNote = 12 * Math.log2(frequency / 440) + 69;
-
-  // Get pitch class (0-11, where C=0)
-  // Round to nearest semitone for cleaner mapping
   const pitchClass = Math.round(midiNote) % 12;
 
-  // Map to hue using Circle of Fifths
-  // Multiplying by 7 steps through the circle of fifths
-  // Each step is 30 degrees on the color wheel (360 / 12 = 30)
-  // The formula: Hue = ((pitchClass * 7) % 12) * 30
-  const hue = ((pitchClass * 7) % 12) * 30;
+  // Map to Circle of Fifths index
+  const circleIndex = (pitchClass * 7) % 12;
+  const hue = SCRIABIN_HUES[circleIndex];
 
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 };

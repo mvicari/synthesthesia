@@ -74,12 +74,28 @@ export default defineConfig([
 
 ## 🎨 Theory & Credits
 
+
+
 ### The Newtonian Mode (Physics)
-Maps audio frequency directly to light frequency by doubling octaves (~40 times) until the audible spectrum hits the visible spectrum (THz).
+
+Based on Sir Isaac Newton’s 1704 work *Opticks*. Newton proposed a mathematical correspondence between the 7 notes of the **Dorian** musical scale and the spectrum of light, explicitly forcing the rainbow to have **7 colors** (adding Orange and Indigo) to match.
+
+* **Method:** Linear octave doubling ($f \cdot 2^{40}$) to shift sound waves into the Terahertz (visible light) range.
+
 * **Result:** Low pitch = Red, High pitch = Violet.
+
 * **Source:** [Opticks (Project Gutenberg)](https://www.gutenberg.org/files/33504/33504-h/33504-h.htm)
 
-### The Mermikides Model (Psychology)
-Based on the research of **Dr. Milton Mermikides**, this mode prioritizes *perceptual* harmony. It maps the **Circle of Fifths** to the Color Wheel.
-* **Result:** Harmonically compatible notes (e.g., C and G) produce analogous colors (e.g., Red and Orange), regardless of their octave.
-* **Source:** [Music of Light and Colour (Lecture)](https://www.youtube.com/live/U_qfzhXjziI)
+
+
+### The Mermikides Mode (Psychology)
+
+Based on the research of **Dr. Milton Mermikides** into perceptual synesthesia. This model organizing color by **harmonic relationship** (musical compatibility) rather than raw frequency.
+
+* **Method:** Maps the **Circle of Fifths** to the Color Wheel.
+
+* **Result:** Harmonically compatible notes (e.g., C and G) produce analogous colors (e.g., Red and Orange), ensuring visual harmony mirrors musical harmony.
+
+* **Source:** [Music of Light and Colour (Lecture)](https://www.youtube.com/watch?v=M9xN9M0fS0o)
+
+* **Website:** [miltonline.com](https://www.miltonline.com/)
