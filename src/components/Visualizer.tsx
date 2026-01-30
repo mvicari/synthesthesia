@@ -246,8 +246,8 @@ export const Visualizer: React.FC<VisualizerProps> = ({
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: noteOpacity, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.3 }}
+                  exit={{ opacity: 0, scale: 0.5 }}
+                  transition={{ duration: 0.2 }}
                   className="absolute pointer-events-none"
                   style={{
                     left: ripple.x,

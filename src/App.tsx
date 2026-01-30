@@ -41,7 +41,7 @@ function App() {
 
     setTimeout(() => {
       setRipples(prev => prev.filter(r => r.id !== id));
-    }, 2000);
+    }, 800);
   }, []);
 
   const handleStart = useCallback(() => {
