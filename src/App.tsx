@@ -5,7 +5,6 @@ import { Wheels } from './components/Wheels';
 import { NoteInfoCard } from './components/NoteInfoCard';
 import { ContextModal } from './components/ContextModal';
 import { BoubaKikiTutorial } from './components/BoubaKikiTutorial';
-import { PlatosCaveMode } from './components/PlatosCaveMode';
 import { useAudio } from './utils/audio';
 import { NOTES, type Note } from './utils/notes';
 
@@ -319,13 +318,6 @@ function App() {
       <BoubaKikiTutorial
         isOpen={isBoubaKikiOpen}
         onClose={() => setIsBoubaKikiOpen(false)}
-      />
-
-      {/* Plato's Cave Accessibility Mode */}
-      <PlatosCaveMode
-        isActive={hasStarted}
-        activeNotes={activeNotes}
-        onToggle={() => {}}
       />
     </div>
   );
