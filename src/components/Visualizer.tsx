@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { frequencyToRGB, getMixColor, getHarmonicColor } from '../utils/colors';
+import { frequencyToRGB, getMixColor, getHarmonicColor, getHarmonicMixColor } from '../utils/colors';
 
 export type VisualizerMode = 'synth' | 'mic';
 
@@ -52,7 +52,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({
   let blendColor = 'transparent';
   if (primaryFrequency > 0) {
     if (mode === 'mic') {
-      blendColor = getHarmonicColor(primaryFrequency);
+      blendColor = allActiveFreqs.length > 1 ? getHarmonicMixColor(allActiveFreqs) : getHarmonicColor(primaryFrequency);
     } else {
       if (allActiveFreqs.length > 1) {
         blendColor = getMixColor(allActiveFreqs);

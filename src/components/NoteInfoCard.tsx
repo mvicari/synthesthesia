@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { frequencyToHSL, getMixColor, getLightStats, getHarmonicColor, getHarmonicPitchInfo } from '../utils/colors';
+import { frequencyToHSL, getMixColor, getLightStats, getHarmonicColor, getHarmonicPitchInfo, getHarmonicMixColor } from '../utils/colors';
 import { NOTES } from '../utils/notes';
 import { detectChord } from '../utils/chords';
 
@@ -35,13 +35,9 @@ export const NoteInfoCard: React.FC<NoteInfoCardProps> = ({
     let blendColor = 'transparent';
     if (primaryFrequency > 0) {
         if (mode === 'mic') {
-            blendColor = getHarmonicColor(primaryFrequency);
+            blendColor = allActiveFreqs.length > 1 ? getHarmonicMixColor(allActiveFreqs) : getHarmonicColor(primaryFrequency);
         } else {
-            if (allActiveFreqs.length > 1) {
-                blendColor = getMixColor(allActiveFreqs);
-            } else {
-                blendColor = frequencyToHSL(primaryFrequency);
-            }
+            blendColor = allActiveFreqs.length > 1 ? getMixColor(allActiveFreqs) : frequencyToHSL(primaryFrequency);
         }
     }
 

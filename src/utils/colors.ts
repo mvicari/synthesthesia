@@ -195,20 +195,26 @@ export const getHarmonicMixColor = (frequencies: number[]): string => {
   if (frequencies.length === 0) return 'transparent';
   if (frequencies.length === 1) return getHarmonicColor(frequencies[0]);
 
-  // Average the hues on the color wheel (need to handle circular averaging)
+  // Average the hues, saturation, and lightness
   let sinSum = 0;
   let cosSum = 0;
+  let satSum = 0;
+  let lightSum = 0;
 
   frequencies.forEach(freq => {
     const hsl = getHarmonicColor(freq);
-    const hueMatch = hsl.match(/hsl\((\d+)/);
-    const hue = hueMatch ? parseFloat(hueMatch[1]) : 0;
-    const radians = (hue * Math.PI) / 180;
+    const [h, s, l] = hsl.match(/\d+/g)?.map(Number) || [0, 0, 0];
+    
+    const radians = (h * Math.PI) / 180;
     sinSum += Math.sin(radians);
     cosSum += Math.cos(radians);
+    satSum += s;
+    lightSum += l;
   });
 
   const avgHue = ((Math.atan2(sinSum, cosSum) * 180) / Math.PI + 360) % 360;
+  const avgSat = Math.round(satSum / frequencies.length);
+  const avgLight = Math.round(lightSum / frequencies.length);
 
-  return `hsl(${Math.round(avgHue)}, 85%, 55%)`;
+  return `hsl(${Math.round(avgHue)}, ${avgSat}%, ${avgLight}%)`;
 };
