@@ -30,12 +30,12 @@ function App() {
     return acc;
   }, {} as Record<string, Note>);
 
-  const addRipple = useCallback((frequency: number) => {
+  const addRipple = useCallback((frequency: number, currentWaveform: OscillatorType) => {
     const id = Date.now().toString() + Math.random();
     const x = window.innerWidth / 2;
     const y = window.innerHeight / 2;
 
-    const newRipple: Ripple = { id, frequency, x, y };
+    const newRipple: Ripple = { id, frequency, x, y, waveform: currentWaveform };
 
     setRipples(prev => [...prev, newRipple]);
 
@@ -61,8 +61,8 @@ function App() {
       newSet.add(frequency);
       return newSet;
     });
-    addRipple(frequency);
-  }, [playTone, initAudio, addRipple, hasStarted, handleStart]);
+    addRipple(frequency, waveform);
+  }, [playTone, initAudio, addRipple, hasStarted, handleStart, waveform]);
 
   const handleStop = useCallback((frequency: number) => {
     stopTone(frequency);

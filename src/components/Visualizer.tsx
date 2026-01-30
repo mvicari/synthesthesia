@@ -16,6 +16,7 @@ export interface Ripple {
   frequency: number;
   x: number;
   y: number;
+  waveform: OscillatorType;
 }
 
 interface VisualizerProps {
@@ -191,31 +192,64 @@ export const Visualizer: React.FC<VisualizerProps> = ({
             const color = mode === 'harmonic' ? getHarmonicColor(freq) : frequencyToRGB(freq);
             const noteOpacity = getOpacity(freq);
             const rippleScale = 4 + (amplitude * 8);
+            const isRippleSaw = ripple.waveform === 'sawtooth' || ripple.waveform === 'square';
+            const points = ripple.waveform === 'square' ? 4 : 3;
 
             return (
               <React.Fragment key={ripple.id}>
                 <motion.div
-                  initial={{ scale: 0, opacity: 0.8, borderWidth: '2px' }}
+                  initial={{ scale: 0, opacity: 0.8 }}
                   animate={{
                     scale: rippleScale,
                     opacity: 0,
-                    borderWidth: '0px',
+                    rotate: isRippleSaw ? [0, 90] : 0,
                   }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 1.5, ease: "easeOut" }}
-                  className="absolute border box-content rounded-full"
+                  className="absolute pointer-events-none"
                   style={{
                     left: ripple.x,
                     top: ripple.y,
-                    width: '80px',
-                    height: '80px',
                     x: '-50%',
                     y: '-50%',
-                    borderColor: color,
-                    boxShadow: `0 0 ${20 + amplitude * 60}px ${color}`,
-                    opacity: noteOpacity,
                   }}
-                />
+                >
+                  <svg width="100" height="100" viewBox="0 0 100 100" style={{ overflow: 'visible' }}>
+                    {isRippleSaw ? (
+                      // SAWTOOTH: Jagged polygon (Kiki)
+                      <motion.path
+                        d={Array.from({ length: points }, (_, i) => {
+                          const angle = (i / points) * Math.PI * 2 - Math.PI / 2;
+                          const r = 40;
+                          const x = 50 + Math.cos(angle) * r;
+                          const y = 50 + Math.sin(angle) * r;
+                          return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+                        }).join(' ') + ' Z'}
+                        fill="none"
+                        stroke={color}
+                        strokeWidth="2"
+                        style={{
+                          filter: `drop-shadow(0 0 ${10 + amplitude * 30}px ${color})`,
+                          opacity: noteOpacity,
+                        }}
+                      />
+                    ) : (
+                      // SINE: Smooth circle (Bouba)
+                      <motion.circle
+                        cx="50"
+                        cy="50"
+                        r="40"
+                        fill="none"
+                        stroke={color}
+                        strokeWidth="2"
+                        style={{
+                          filter: `drop-shadow(0 0 ${10 + amplitude * 30}px ${color})`,
+                          opacity: noteOpacity,
+                        }}
+                      />
+                    )}
+                  </svg>
+                </motion.div>
               </React.Fragment>
             );
           })}
