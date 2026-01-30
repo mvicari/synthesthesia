@@ -11,6 +11,7 @@ export const Wheels: React.FC<WheelsProps> = ({
 }) => {
   const pitchRef = useRef<HTMLDivElement>(null);
   const isDraggingPitch = useRef(false);
+  const lastTouchTime = useRef(0);
 
   // Helper to calculate value from mouse Y position
   const calculateValue = (clientY: number, rect: DOMRect) => {
@@ -59,6 +60,18 @@ export const Wheels: React.FC<WheelsProps> = ({
     };
   }, [onPitchBend]);
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const now = Date.now();
+    if (now - lastTouchTime.current < 300) {
+      onPitchBend(0);
+      isDraggingPitch.current = false;
+    } else {
+      isDraggingPitch.current = true;
+    }
+    lastTouchTime.current = now;
+    e.stopPropagation();
+  };
+
   return (
     <div className="flex gap-2 md:gap-6 h-32 md:h-48 select-none bg-gray-900 p-2 md:p-4 rounded-xl shadow-2xl border border-gray-800 shrink-0">
       {/* PITCH BEND */}
@@ -66,7 +79,8 @@ export const Wheels: React.FC<WheelsProps> = ({
         <div 
           ref={pitchRef}
           onMouseDown={() => isDraggingPitch.current = true}
-          onTouchStart={(e) => { isDraggingPitch.current = true; e.stopPropagation(); }}
+          onDoubleClick={() => onPitchBend(0)}
+          onTouchStart={handleTouchStart}
           className="relative w-8 md:w-12 h-full bg-gray-800 rounded-lg cursor-ns-resize overflow-hidden border border-gray-700 shadow-inner group touch-none"
         >
           {/* Center Line */}
