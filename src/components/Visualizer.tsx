@@ -184,16 +184,15 @@ export const Visualizer: React.FC<VisualizerProps> = ({
         className="absolute inset-0 blur-[150px] mix-blend-screen pointer-events-none opacity-20"
       />
 
-      {/* RIPPLES LAYER */}
+      {/* WAVEFORM RIPPLES - Static shapes without expanding effect */}
       <div className="absolute inset-0">
         <AnimatePresence>
           {ripples.map((ripple) => {
             const freq = getBentFreq(ripple.frequency);
             const color = mode === 'harmonic' ? getHarmonicColor(freq) : frequencyToRGB(freq);
             const noteOpacity = getOpacity(freq);
-            const rippleScale = 4 + (amplitude * 8);
 
-            // Generate waveform-based ripple paths
+            // Generate waveform-based paths
             const generateWaveformPath = () => {
               const centerX = 50;
               const centerY = 50;
@@ -202,7 +201,6 @@ export const Visualizer: React.FC<VisualizerProps> = ({
               const segments = 64;
 
               if (ripple.waveform === 'sine') {
-                // SINE: Smooth circle with subtle wave
                 return Array.from({ length: segments + 1 }, (_, i) => {
                   const angle = (i / segments) * Math.PI * 2;
                   const wave = Math.sin(angle * 4) * waveAmplitude;
@@ -212,17 +210,15 @@ export const Visualizer: React.FC<VisualizerProps> = ({
                   return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
                 }).join(' ') + ' Z';
               } else if (ripple.waveform === 'square') {
-                // SQUARE: Square wave pattern wrapped in circle
                 return Array.from({ length: segments + 1 }, (_, i) => {
                   const angle = (i / segments) * Math.PI * 2;
-                  // Square wave: flat sections with sharp transitions
-                  const normalized = (angle / (Math.PI * 2)) * 4; // 4 cycles
+                  const normalized = (angle / (Math.PI * 2)) * 4;
                   const phase = normalized % 1;
                   let waveOffset = 0;
                   if (phase < 0.5) {
-                    waveOffset = waveAmplitude; // High
+                    waveOffset = waveAmplitude;
                   } else {
-                    waveOffset = -waveAmplitude; // Low
+                    waveOffset = -waveAmplitude;
                   }
                   const r = baseRadius + waveOffset;
                   const x = centerX + Math.cos(angle) * r;
@@ -230,13 +226,10 @@ export const Visualizer: React.FC<VisualizerProps> = ({
                   return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
                 }).join(' ') + ' Z';
               } else {
-                // SAWTOOTH: Sawtooth pattern - gradual rise, sharp drop
                 return Array.from({ length: segments + 1 }, (_, i) => {
                   const angle = (i / segments) * Math.PI * 2;
-                  // Sawtooth: linear rise, sudden fall
-                  const normalized = (angle / (Math.PI * 2)) * 3; // 3 cycles
+                  const normalized = (angle / (Math.PI * 2)) * 3;
                   const phase = normalized % 1;
-                  // Gradual climb from -amplitude to +amplitude, then sharp drop
                   const waveOffset = (phase * 2 - 1) * waveAmplitude;
                   const r = baseRadius + waveOffset;
                   const x = centerX + Math.cos(angle) * r;
@@ -247,19 +240,14 @@ export const Visualizer: React.FC<VisualizerProps> = ({
             };
 
             const pathD = generateWaveformPath();
-            const isSaw = ripple.waveform === 'sawtooth' || ripple.waveform === 'square';
 
             return (
               <React.Fragment key={ripple.id}>
                 <motion.div
-                  initial={{ scale: 0, opacity: 0.8 }}
-                  animate={{
-                    scale: rippleScale,
-                    opacity: 0,
-                    rotate: isSaw ? [0, 45] : 0,
-                  }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: noteOpacity, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.3 }}
                   className="absolute pointer-events-none"
                   style={{
                     left: ripple.x,
@@ -277,8 +265,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({
                       strokeLinecap="round"
                       strokeLinejoin={ripple.waveform === 'sine' ? 'round' : 'miter'}
                       style={{
-                        filter: `drop-shadow(0 0 ${10 + amplitude * 30}px ${color})`,
-                        opacity: noteOpacity,
+                        filter: `drop-shadow(0 0 10px ${color})`,
                       }}
                     />
                   </svg>
