@@ -8,13 +8,14 @@ import { useAudio } from './utils/audio';
 import { NOTES, type Note } from './utils/notes';
 
 function App() {
-  const { playTone, stopTone, initAudio, setPitchBend: setAudioPitch } = useAudio();
+  const { playTone, stopTone, initAudio, setPitchBend: setAudioPitch, setWaveform, analyser } = useAudio();
   const [activeNotes, setActiveNotes] = useState<Set<number>>(new Set());
   const [ripples, setRipples] = useState<Ripple[]>([]);
   const [pitchBend, setPitchBend] = useState(0); // -2 to 2 semitones
   const [hasStarted, setHasStarted] = useState(false);
   const [mode, setMode] = useState<VisualizerMode>('synth');
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [waveform, setWaveformState] = useState<OscillatorType>('sine');
 
   // Update Audio Engine when UI state changes
   useEffect(() => {
@@ -86,6 +87,14 @@ function App() {
       // M key toggles mode
       if (e.key.toLowerCase() === 'm' && !e.repeat) {
         handleModeToggle();
+        return;
+      }
+
+      // V key toggles waveform (since W is C#)
+      if (e.key.toLowerCase() === 'v' && !e.repeat) {
+        const nextWave = waveform === 'sine' ? 'sawtooth' : 'sine';
+        setWaveformState(nextWave);
+        setWaveform(nextWave);
         return;
       }
 
@@ -164,6 +173,8 @@ function App() {
         activeNotes={activeNotes}
         pitchBend={pitchBend}
         mode={mode}
+        waveform={waveform}
+        analyser={analyser.current}
       />
 
       {/* Start Overlay */}
@@ -171,10 +182,10 @@ function App() {
         <div
           className="absolute inset-0 z-[100] bg-black/80 backdrop-blur-md flex flex-col items-center justify-center cursor-pointer transition-opacity duration-500"
           onClick={handleStart}
-          onTouchStart={() => { 
+          onTouchStart={() => {
             // Do not preventDefault here to allow handleStart to be called via onClick if needed,
             // but on iOS, touchstart is the best way to resume audio context.
-            handleStart(); 
+            handleStart();
           }}
         >
           <div className="p-8 border border-white/20 rounded-2xl bg-black/50 hover:bg-white/10 transition-colors group max-w-[90vw]">
@@ -207,7 +218,19 @@ function App() {
 
           {/* Mode Toggle Switch */}
           <div className="pointer-events-auto flex items-start gap-2">
-            <div className="flex flex-col items-end">
+            <div className="flex flex-col items-end gap-2">
+              {/* Waveform Toggle */}
+              <button
+                onClick={() => {
+                  const nextWave = waveform === 'sine' ? 'sawtooth' : 'sine';
+                  setWaveformState(nextWave);
+                  setWaveform(nextWave);
+                }}
+                className="px-3 py-1 rounded-full border border-white/10 bg-white/5 text-[10px] font-mono tracking-widest uppercase hover:bg-white/10 transition-all"
+              >
+                Timbre: <span className={waveform === 'sine' ? 'text-blue-300' : 'text-orange-400'}>{waveform}</span>
+              </button>
+
               <button
                 onClick={handleModeToggle}
                 className={`

@@ -77,10 +77,19 @@ export const getLightStats = (frequency: number) => {
 
 export const frequencyToRGB = (frequency: number): string => {
   const targetFreq = scaleToVisible(frequency);
-  // λ = v / f
   const wavelength = (LIGHT_VELOCITY / targetFreq) * 1e9;
   const [r, g, b] = wavelengthToRgb(wavelength);
-  return `rgb(${r}, ${g}, ${b})`;
+
+  // Saturation Logic for Physics Mode
+  // High frequencies (above ~600 THz) shift toward white
+  const freqTHz = targetFreq / 1e12;
+  const washOut = Math.min(1, Math.max(0, (freqTHz - 600) / 150));
+
+  const rFinal = Math.round(r + (255 - r) * washOut);
+  const gFinal = Math.round(g + (255 - g) * washOut);
+  const bFinal = Math.round(b + (255 - b) * washOut);
+
+  return `rgb(${rFinal}, ${gFinal}, ${bFinal})`;
 };
 
 // Kept for compatibility but forwarding to new logic
@@ -122,32 +131,29 @@ export const getMixColor = (frequencies: number[]): string => {
  * Scriabin/Mermikides Lookup Table (LUT) for Circle of Fifths
  * Index 0 corresponds to C (Red), moving by Perfect Fifths.
  */
-const SCRIABIN_HUES = [0, 30, 60, 120, 210, 260, 285, 315, 330, 340, 350, 355];
+const SCRIABIN_HUES = [0, 30, 60, 120, 210, 250, 280, 330, 20, 45, 345, 355];
 
 /**
  * Milton Mermikides' Harmonic Color Mapping using Circle of Fifths
  * 
- * This maps musical pitch to color based on harmonic relationships rather than
- * the linear physics approach (octave doubling).
- * 
- * By multiplying the pitch class by 7 (the interval of a Perfect Fifth),
- * harmonically related notes (like C & G) become visually adjacent neighbors
- * on the color wheel.
- * 
- * Logic Check:
- * - Note A (PC 9) -> Index (9*7)%12 = 3 -> 120° (Green)
- * - Note E (PC 4) -> Index (4*7)%12 = 4 -> 210° (Blue)
- * - Note F# (PC 6) -> Index (6*7)%12 = 6 -> 285° (Violet)
+ * Maps musical pitch to color based on historical synesthetic anchors (Scriabin).
+ * Includes "Saturation Logic": Higher pitches become desaturated (whiter).
  */
-export const getHarmonicColor = (frequency: number, saturation: number = 85, lightness: number = 55): string => {
+export const getHarmonicColor = (frequency: number): string => {
   if (frequency <= 0) return 'hsl(0, 0%, 0%)';
 
   const midiNote = 12 * Math.log2(frequency / 440) + 69;
-  const pitchClass = Math.round(midiNote) % 12;
+  const pitchClass = ((Math.round(midiNote) % 12) + 12) % 12;
 
   // Map to Circle of Fifths index
   const circleIndex = (pitchClass * 7) % 12;
   const hue = SCRIABIN_HUES[circleIndex];
+
+  // Saturation Logic: Higher pitches are more desaturated (whiter)
+  // Base 200Hz - 85% sat, 1000Hz - 40% sat
+  const satProgress = Math.min(1, Math.max(0, (frequency - 200) / 1000));
+  const saturation = 90 - (satProgress * 50);
+  const lightness = 55 + (satProgress * 15);
 
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 };

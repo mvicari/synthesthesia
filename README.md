@@ -1,101 +1,62 @@
-# React + TypeScript + Vite
+# SYNTHTHESTHESIA 🎨🎹
+### Audio-Visual Frequency Mapper: Physics & Perception
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Synthesthesia is a cross-modal exploration of the relationship between sound and light. It allows users to visualize music through two distinct historical and theoretical frameworks: **Newtonian Physics** and **Harmonic Psychology**.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Getting Started
 
-## React Compiler
+1.  **Entry:** Tap the "TAP TO ENTER" splash screen to initialize the AudioContext.
+2.  **Interaction:** Play using your computer keyboard (A-Z) or by tapping the on-screen keys.
+3.  **Modes:** Press **[M]** to toggle between Physics and Harmonic modes.
+4.  **Timbre:** Press **[V]** to toggle between Sine (Smooth) and Sawtooth (Jagged) waveforms.
+5.  **Pitch:** Use the **Mouse Wheel** or **[+/-]** keys to bend the overall pitch.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 🧠 Theoretical Frameworks
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 1. The Newtonian Mode (Physics)
+Inspired by Sir Isaac Newton’s 1704 work *Opticks*. This mode follows a linear mathematical formula ($f \cdot 2^{41}$) to shift audible frequencies into the Terahertz range of visible light.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+*   **Newton's Symmetry:** Newton explicitly mapped the rainbow to the **D Dorian** scale because of its unique mathematical symmetry.
+*   **The Seven Colors:** He identified seven primary colors (adding Orange and Indigo) to mirror the seven-note musical scale.
+*   **The 41st Octave:** Visible light spans roughly one octave; shifted down 41 times, it centers around middle C.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 2. The Mermikides Mode (Harmonic)
+Based on the modern research of **Dr. Milton Mermikides**. This model prioritizes perceptual harmony by mapping the **Circle of Fifths** to the Color Wheel.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+*   **Harmonic Brightness:** Movement along the Circle of Fifths acts as a "Dimmer Switch"—adding light or mutedness to the visual experience.
+*   **Scriabin's Anchors:** Incorporates Alexander Scriabin's synesthetic mappings: C is Red, D is Yellow, and F# is Blue-Violet.
+*   **Perceptual Consonance:** Harmonically compatible notes (like C and G) produce analogous colors, ensuring visual beauty mirrors musical consonance.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🛠 Features
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+*   **Chord Detection:** Intelligent analysis identifies triads and 7th chords in real-time.
+*   **Bouba-Kiki Timbre Mapping:** Waveforms change shape—Sine waves appear as rounded orbs, while Sawtooth waves appear as sharp, jagged polygons.
+*   **Perceptual Response:** Visual elements scale and brighten based on real-time **Amplitude**, while **Pitch Height** controls opacity.
 
-## 🎨 Theory & Credits
+---
 
+## 📚 Bibliography & Citations
 
+*   **Newton, I. (1704).** *Opticks: Or, A Treatise of the Reflections, Refractions, Inflections and Colours of Light*. London: Royal Society.
+*   **Mermikides, M. (2026).** *Music of Light & Colour*. Gresham College Lecture Series. [Watch Lecture](https://www.gresham.ac.uk/watch-now/music-light-colour) | [Download Transcript (PDF)](https://www.gresham.ac.uk/sites/default/files/transcript/R_2026_01_12_1618_Mermikides_T_V3.pdf)
+*   **Scriabin, A. (1910).** *Prometheus: The Poem of Fire (Op. 60)*. Moscow.
+*   **Mermikides, M. (2024).** *The Music of Light*. [miltonline.com](https://www.miltonline.com/)
 
-### The Newtonian Mode (Physics)
+---
 
-Based on Sir Isaac Newton’s 1704 work *Opticks*. Newton proposed a mathematical correspondence between the 7 notes of the **Dorian** musical scale and the spectrum of light, explicitly forcing the rainbow to have **7 colors** (adding Orange and Indigo) to match.
+## 🛠 Tech Stack
 
-* **Method:** Linear octave doubling ($f \cdot 2^{40}$) to shift sound waves into the Terahertz (visible light) range.
+*   **Engine:** React + TypeScript + Vite
+*   **Animation:** Framer Motion
+*   **Audio:** Web Audio API (Native)
+*   **Styling:** Tailwind CSS + Glassmorphism Props
 
-* **Result:** Low pitch = Red, High pitch = Violet.
+---
 
-* **Source:** [Opticks (Project Gutenberg)](https://www.gutenberg.org/files/33504/33504-h/33504-h.htm)
-
-
-
-### The Mermikides Mode (Psychology)
-
-Based on the research of **Dr. Milton Mermikides** into perceptual synesthesia. This model organizing color by **harmonic relationship** (musical compatibility) rather than raw frequency.
-
-* **Method:** Maps the **Circle of Fifths** to the Color Wheel.
-
-* **Result:** Harmonically compatible notes (e.g., C and G) produce analogous colors (e.g., Red and Orange), ensuring visual harmony mirrors musical harmony.
-
-* **Source:** [Music of Light and Colour (Lecture)](https://www.youtube.com/live/U_qfzhXjziI)
-
-* **Website:** [miltonline.com](https://www.miltonline.com/)
+Created for the exploration of Music and Color.

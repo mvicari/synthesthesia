@@ -55,15 +55,15 @@ export const ContextModal: React.FC<ContextModalProps> = ({ isOpen, onClose, mod
             <div className="space-y-8">
               {/* History Section */}
               <div>
-                <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-white/50">History</h3>
+                <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-white/50">Historical Legacy</h3>
                 <p className="text-sm leading-relaxed text-gray-300 font-light">
                   {isPhysics ? (
                     <>
-                      In his 1704 work <em className="text-white italic">Opticks</em>, Sir Isaac Newton proposed a direct link between the spectrum of light and the musical scale. He even explicitly forced the rainbow to have <strong className="text-white">7 colors</strong> (adding Orange and Indigo) to create a mathematical correspondence with the 7 notes of the <strong className="text-white">Dorian</strong> musical scale.
+                      In his 1704 work <em className="text-white italic">Opticks</em>, Sir Isaac Newton proposed a direct link between the spectrum of light and the musical scale. He identified <strong className="text-white">7 colors</strong> (Orange and Indigo) to match the seven-note musical scale. Most interestingly, he mapped the rainbow specifically to the <strong className="text-white">D Dorian</strong> scale because of its unique mathematical symmetry.
                     </>
                   ) : (
                     <>
-                      Based on the modern research into <strong className="text-white">perceptual synesthesia</strong> by <strong className="text-white font-medium">Dr. Milton Mermikides</strong>, this model argues that we hear music in circles, not straight lines. It prioritizes perceptual harmony over physical frequency.
+                      This model incorporates <strong className="text-white font-medium">Alexander Scriabin's</strong> synesthetic anchors from <em className="italic text-white">Prometheus</em> (1910). Scriabin viewed <strong className="text-red-400">C as "Earthly Red"</strong>, <strong className="text-yellow-400">D as "Golden-Yellow"</strong>, and <strong className="text-violet-400">F# as "Transcendent Blue-Violet."</strong> It prioritizes the "psychological" relationship of keys over physical frequency.
                     </>
                   )}
                 </p>
@@ -71,15 +71,15 @@ export const ContextModal: React.FC<ContextModalProps> = ({ isOpen, onClose, mod
 
               {/* Technical Section */}
               <div>
-                <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-white/50">How it Works</h3>
+                <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-white/50">Philosophical Mapping</h3>
                 <p className="text-sm leading-relaxed text-gray-300 font-light">
                   {isPhysics ? (
                     <>
-                      This mode follows a linear logic ($f \cdot 2^{40}$). It takes the audio frequency and doubles it ~40 times until the sound wave becomes a light wave in the Terahertz range. While mathematically accurate, it separates "Low C" (Red) from "High C" (Violet).
+                      Visible light spans almost exactly one octave. When shifted down <strong className="text-white">41 octaves</strong>, it sits around middle C. While mathematically pure, this linear mapping separates "High C" from "Low C," creating a spiral of color where each note has a unique physical "hue" based on its exact Terahertz frequency.
                     </>
                   ) : (
                     <>
-                      This mode maps the <strong className="text-white font-medium">Circle of Fifths</strong> to the Color Wheel. This ensures that harmonically related notes (visual consonance) appear as <strong className="text-white">analogous colors</strong> on the spectrum, regardless of their octave.
+                      As explored by <strong className="text-white">Dr. Milton Mermikides</strong>, this mode treats the Circle of Fifths as a <strong className="text-white font-medium">"Dimmer Switch"</strong> for harmonic brightness. Notes a Perfect 5th apart (visual consonance) appear as analogous colors. This model suggests that harmony is a shape, and dissonance is a clash of hues.
                     </>
                   )}
                 </p>
@@ -96,37 +96,28 @@ export const ContextModal: React.FC<ContextModalProps> = ({ isOpen, onClose, mod
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-[10px] font-bold tracking-widest text-white transition-all hover:bg-white/10"
                   >
-                    READ NEWTON'S OPTICKS
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-50"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-                  </a>
-                  <a
-                    href="https://en.wikipedia.org/wiki/Visible_spectrum"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-[10px] font-bold tracking-widest text-white transition-all hover:bg-white/10"
-                  >
-                    THE VISIBLE SPECTRUM
+                    NEWTON'S OPTICKS (1704)
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-50"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
                   </a>
                 </>
               ) : (
                 <>
                   <a
-                    href="https://www.youtube.com/live/U_qfzhXjziI"
+                    href="https://www.gresham.ac.uk/sites/default/files/transcript/R_2026_01_12_1618_Mermikides_T_V3.pdf"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-[10px] font-bold tracking-widest text-white transition-all hover:bg-white/10"
+                    className="flex items-center gap-2 rounded-full border border-pink-500/20 bg-pink-500/10 px-5 py-2.5 text-[10px] font-bold tracking-widest text-pink-200 transition-all hover:bg-pink-500/20"
                   >
-                    WATCH THE LECTURE
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-50"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                    DOWNLOAD TRANSCRIPT (PDF)
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-50"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                   </a>
                   <a
-                    href="https://www.miltonline.com/"
+                    href="https://www.gresham.ac.uk/watch-now/music-light-colour"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-[10px] font-bold tracking-widest text-white transition-all hover:bg-white/10"
                   >
-                    DR. MILTON MERMIKIDES
+                    LECTURE: MUSIC & COLOUR
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-50"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
                   </a>
                 </>

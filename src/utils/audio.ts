@@ -8,9 +8,18 @@ export const useAudio = () => {
   // Active nodes storage
   const oscillators = useRef<Map<number, OscillatorNode>>(new Map());
   const gains = useRef<Map<number, GainNode>>(new Map());
+  const waveformRef = useRef<OscillatorType>('sine');
 
   // Global control state refs (so new notes spawn with correct values)
   const currentPitchBend = useRef<number>(0); // in semitones
+
+  const setWaveform = useCallback((type: OscillatorType) => {
+    waveformRef.current = type;
+    // Update all currently playing oscillators
+    oscillators.current.forEach(osc => {
+      osc.type = type;
+    });
+  }, []);
 
   const initAudio = useCallback(() => {
     if (!audioContext.current) {
@@ -25,10 +34,10 @@ export const useAudio = () => {
         console.log("AudioContext created. State:", audioContext.current.state);
 
         masterGain.current = audioContext.current.createGain();
-        masterGain.current.gain.setValueAtTime(0.5, audioContext.current.currentTime);
+        masterGain.current.gain.setValueAtTime(0.4, audioContext.current.currentTime);
 
         analyser.current = audioContext.current.createAnalyser();
-        analyser.current.fftSize = 2048;
+        analyser.current.fftSize = 1024; // Smaller for smoother visual updates
 
         masterGain.current.connect(analyser.current);
         analyser.current.connect(audioContext.current.destination);
@@ -75,7 +84,7 @@ export const useAudio = () => {
     const noteGain = audioContext.current.createGain();
 
     // 2. Configure Main Oscillator
-    osc.type = 'sine';
+    osc.type = waveformRef.current;
     osc.frequency.setValueAtTime(frequency, currentTime);
     osc.detune.setValueAtTime(currentPitchBend.current * 100, currentTime);
 
@@ -105,7 +114,7 @@ export const useAudio = () => {
     const noteGain = gains.current.get(frequency);
 
     if (osc && noteGain) {
-      const stopTime = audioContext.current.currentTime + 0.2;
+      const stopTime = audioContext.current.currentTime + 0.15; // Slightly faster release for snappy saw
       noteGain.gain.cancelScheduledValues(audioContext.current.currentTime);
       noteGain.gain.setValueAtTime(noteGain.gain.value, audioContext.current.currentTime);
       noteGain.gain.exponentialRampToValueAtTime(0.001, stopTime);
@@ -140,5 +149,14 @@ export const useAudio = () => {
     };
   }, []);
 
-  return { playTone, stopTone, initAudio, setPitchBend, analyser, audioContext };
+  return {
+    playTone,
+    stopTone,
+    initAudio,
+    setPitchBend,
+    setWaveform,
+    analyser,
+    audioContext,
+    currentWaveform: waveformRef.current
+  };
 };

@@ -4,7 +4,6 @@ import { frequencyToHSL, getMixColor, getHarmonicColor } from '../utils/colors';
 
 export type VisualizerMode = 'synth' | 'mic';
 
-
 export interface Ripple {
   id: string;
   frequency: number;
@@ -17,6 +16,8 @@ interface VisualizerProps {
   activeNotes: Set<number>;
   pitchBend?: number;
   mode?: VisualizerMode;
+  analyser?: AnalyserNode | null;
+  waveform?: OscillatorType;
 }
 
 export const Visualizer: React.FC<VisualizerProps> = ({
@@ -24,32 +25,35 @@ export const Visualizer: React.FC<VisualizerProps> = ({
   activeNotes,
   pitchBend = 0,
   mode = 'synth',
+  analyser,
+  waveform = 'sine',
 }) => {
   // Helper to calculate bent frequency
   const getBentFreq = (baseFreq: number) => baseFreq * Math.pow(2, pitchBend / 12);
 
-  // 1. Determine Active Inputs
+  const [amplitude, setAmplitude] = React.useState(0);
+  const dataArrayRef = React.useRef<Uint8Array | null>(null);
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+
+  // Determine Active Inputs
   const hasActiveInput = activeNotes.size > 0;
 
-  // 2. Determine Primary Frequency and All Active Frequencies
+  // Determine Primary Frequency and All Active Frequencies
   let primaryFrequency = 0;
   const allActiveFreqs: number[] = [];
 
   if (hasActiveInput) {
     const freqs = Array.from(activeNotes).map(getBentFreq);
-    primaryFrequency = freqs[0]; // Just take first for primary color
+    primaryFrequency = freqs[0];
     allActiveFreqs.push(...freqs);
   }
 
-  // 3. Calculate Color based on Mode (Theory)
+  // Calculate Color based on Mode (Theory)
   let blendColor = 'transparent';
   if (primaryFrequency > 0) {
     if (mode === 'mic') {
-      // Harmonic Mode (Circle of Fifths)
       blendColor = getHarmonicColor(primaryFrequency);
     } else {
-      // Physics Mode (Octave Doubling)
-      // Use getMixColor if multiple notes, or single frequency to HSL
       if (allActiveFreqs.length > 1) {
         blendColor = getMixColor(allActiveFreqs);
       } else {
@@ -58,57 +62,163 @@ export const Visualizer: React.FC<VisualizerProps> = ({
     }
   }
 
+  const isSaw = waveform === 'sawtooth';
+
+  React.useEffect(() => {
+    if (!analyser) return;
+
+    dataArrayRef.current = new Uint8Array(analyser.frequencyBinCount);
+    let animationId: number;
+
+    const update = () => {
+      const canvas = canvasRef.current;
+      const ctx = canvas?.getContext('2d');
+      const dataArray = dataArrayRef.current;
+
+      if (analyser && dataArray) {
+        analyser.getByteTimeDomainData(dataArray as Uint8Array);
+
+        // Calculate average amplitude for overall sizing
+        let sum = 0;
+        for (let i = 0; i < dataArray.length; i++) {
+          const val = (dataArray[i] - 128) / 128;
+          sum += val * val;
+        }
+        const rms = Math.sqrt(sum / dataArray.length);
+        setAmplitude(rms);
+
+        // Draw Waveform
+        if (ctx && canvas && hasActiveInput) {
+          const w = canvas.width;
+          const h = canvas.height;
+          const cx = w / 2;
+          const cy = h / 2;
+
+          ctx.clearRect(0, 0, w, h);
+          ctx.beginPath();
+          ctx.strokeStyle = blendColor;
+          ctx.lineWidth = 4;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.shadowBlur = 15;
+          ctx.shadowColor = blendColor;
+
+          const bufferLength = dataArray.length;
+          const baseRadius = 100 + (rms * 50);
+
+          if (!isSaw) {
+            // SINE: Circular Waveform (Polar)
+            for (let i = 0; i <= bufferLength; i++) {
+              const idx = i % bufferLength;
+              const angle = (i / bufferLength) * Math.PI * 2;
+              const v = (dataArray[idx] - 128) / 128;
+              const r = baseRadius + (v * 45);
+              const x = cx + Math.cos(angle) * r;
+              const y = cy + Math.sin(angle) * r;
+              if (i === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            }
+          } else {
+            // SAWTOOTH: Square Waveform
+            const side = baseRadius * 1.6;
+            const halfSide = side / 2;
+
+            for (let i = 0; i <= bufferLength; i++) {
+              const idx = i % bufferLength;
+              const progress = (i / bufferLength) * 4;
+              const v = (dataArray[idx] - 128) / 128;
+              const offset = v * 30;
+
+              let x = 0, y = 0;
+
+              if (progress <= 1) { // Top
+                x = cx - halfSide + progress * side;
+                y = cy - halfSide - offset;
+              } else if (progress <= 2) { // Right
+                x = cx + halfSide + offset;
+                y = cy - halfSide + (progress - 1) * side;
+              } else if (progress <= 3) { // Bottom
+                x = cx + halfSide - (progress - 2) * side;
+                y = cy + halfSide + offset;
+              } else { // Left
+                x = cx - halfSide - offset;
+                y = cy + halfSide - (progress - 3) * side;
+              }
+
+              if (i === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            }
+          }
+          ctx.closePath();
+          ctx.stroke();
+
+          // Internal Glow
+          ctx.globalAlpha = 0.15;
+          ctx.fillStyle = blendColor;
+          ctx.fill();
+          ctx.globalAlpha = 1.0;
+        } else if (ctx && canvas) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+      animationId = requestAnimationFrame(update);
+    };
+
+    update();
+    return () => cancelAnimationFrame(animationId);
+  }, [analyser, blendColor, isSaw, hasActiveInput]);
+
+  // 1. Timbre Mapping
+  const shapeStyle = isSaw
+    ? {
+      borderRadius: '10%',
+      transform: `rotate(${amplitude * 360}deg)`,
+      border: '1px solid rgba(255,255,255,0.1)'
+    }
+    : { borderRadius: '50%' };
+
+  const getOpacity = (freq: number) => {
+    const normalized = Math.min(1, Math.max(0, (freq - 250) / 400));
+    return 0.4 + (normalized * 0.5);
+  };
+
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden bg-black z-0 perspective-[1000px]">
-      {/* Deep Space / Aurora Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 120, ease: "linear", repeat: Infinity }}
-          className="absolute w-[200%] h-[200%] -top-1/2 -left-1/2 opacity-30 mix-blend-screen"
-          style={{
-            background: `conic-gradient(from 0deg, ${blendColor} 0%, transparent 40%, ${blendColor} 80%, transparent 100%)`,
-            filter: 'blur(100px)',
-          }}
-        />
-      </div>
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 perspective-[1000px]">
+      <div className="absolute inset-0 bg-black" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(20,20,40,1)_0%,rgba(0,0,0,1)_100%)]" />
 
-      {/* Dynamic Background Pulse (Chord Color) */}
-      <div className="absolute inset-0 flex items-center justify-center transition-colors duration-200 ease-linear">
-        {hasActiveInput && (
-          <div
-            className="w-full h-full opacity-15 blur-3xl mix-blend-screen transition-all duration-300"
-            style={{
-              backgroundColor: blendColor,
-              transform: `scale(${1 + activeNotes.size * 0.05})`
-            }}
-          />
-        )}
-      </div>
+      <motion.div
+        animate={{
+          opacity: [0.1, 0.2, 0.1],
+          scale: [1, 1.1, 1],
+        }}
+        transition={{ duration: 10, repeat: Infinity }}
+        style={{ background: blendColor }}
+        className="absolute inset-0 blur-[150px] mix-blend-screen pointer-events-none opacity-20"
+      />
 
-      {/* Main 3D Scene Layer - Simplified ripples */}
+      {/* RIPPLES LAYER */}
       <div className="absolute inset-0">
         <AnimatePresence>
           {ripples.map((ripple) => {
-            // Calculate ripple color based on CURRENT mode
-            // This ensures ripples match the current theory being visualized
-            let color = 'white';
             const freq = getBentFreq(ripple.frequency);
-            if (mode === 'mic') {
-              color = getHarmonicColor(freq);
-            } else {
-              color = frequencyToHSL(freq);
-            }
+            const color = mode === 'mic' ? getHarmonicColor(freq) : frequencyToHSL(freq);
+            const noteOpacity = getOpacity(freq);
+            const rippleScale = 4 + (amplitude * 5);
 
             return (
               <React.Fragment key={ripple.id}>
-                {/* Core shockwave - clean single ring */}
                 <motion.div
-                  initial={{ scale: 0, opacity: 0.6, borderWidth: '3px' }}
-                  animate={{ scale: 4, opacity: 0, borderWidth: '0px' }}
+                  initial={{ scale: 0, opacity: 1, borderWidth: '3px', rotate: isSaw ? 45 : 0 }}
+                  animate={{
+                    scale: rippleScale,
+                    opacity: 0,
+                    borderWidth: '0px',
+                    rotate: isSaw ? 135 : 0,
+                  }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 1.2, ease: [0.1, 0.67, 0.83, 0.67] }}
-                  className="absolute rounded-full border box-content mix-blend-screen"
+                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  className="absolute border box-content"
                   style={{
                     left: ripple.x,
                     top: ripple.y,
@@ -116,8 +226,10 @@ export const Visualizer: React.FC<VisualizerProps> = ({
                     height: '100px',
                     x: '-50%',
                     y: '-50%',
+                    borderRadius: isSaw ? '10%' : '50%',
                     borderColor: color,
-                    boxShadow: `0 0 40px ${color}`,
+                    boxShadow: `0 0 50px ${color}`,
+                    opacity: noteOpacity,
                   }}
                 />
               </React.Fragment>
@@ -126,30 +238,62 @@ export const Visualizer: React.FC<VisualizerProps> = ({
         </AnimatePresence>
       </div>
 
-
-
       {/* Sustained Active Note Orb */}
       <div className="absolute inset-0 flex items-center justify-center">
         <AnimatePresence>
           {hasActiveInput && (
             <motion.div
-              key="main-orb"
+              key="main-orb-glow"
               initial={{ scale: 0.5, opacity: 0, filter: 'blur(20px)' }}
               animate={{
-                scale: [1, 1.2 + 0.1, 1.1],
-                opacity: 0.5,
-                filter: 'blur(60px)'
+                scale: (1 + (amplitude * 2.0)),
+                opacity: getOpacity(primaryFrequency),
+                filter: `blur(${isSaw ? 4 : 45}px) brightness(${1 + amplitude * 2})`,
+                ...shapeStyle
               }}
               exit={{ scale: 0, opacity: 0, filter: 'blur(10px)' }}
               transition={{
-                duration: 0.3,
-                scale: { repeat: Infinity, duration: 1.5, ease: "easeInOut" }
+                duration: 0.1,
+                opacity: { duration: 0.5 }
               }}
-              className="absolute w-72 h-72 rounded-full mix-blend-screen"
+              className="absolute w-96 h-96 mix-blend-screen"
               style={{
-                backgroundColor: blendColor,
+                backgroundColor: isSaw ? 'transparent' : `${blendColor}33`, // Slightly more visible fill
+                boxShadow: isSaw
+                  ? `0 0 60px ${blendColor}66, inset 0 0 30px rgba(255,255,255,0.1)`
+                  : `0 0 ${120 + amplitude * 180}px ${blendColor}88`,
               }}
             />
+          )}
+        </AnimatePresence>
+
+        {/* Sharp Waveform Overlay */}
+        <AnimatePresence>
+          {hasActiveInput && (
+            <motion.div
+              key="main-orb-waveform"
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{
+                scale: (1 + (amplitude * 2.0)),
+                opacity: getOpacity(primaryFrequency),
+                ...shapeStyle,
+                transform: isSaw ? shapeStyle.transform : 'none', // Apply rotation ONLY to sawtooth
+                border: 'none', // Remove inner border from waveform wrapper
+              }}
+              exit={{ scale: 0, opacity: 0 }}
+              transition={{ duration: 0.1 }}
+              className="absolute w-96 h-96 mix-blend-screen pointer-events-none"
+            >
+              <canvas
+                ref={canvasRef}
+                width={800}
+                height={800}
+                className="w-full h-full"
+                style={{
+                  filter: `blur(${isSaw ? 1 : 2}px) drop-shadow(0 0 10px ${blendColor})`, // Much lighter blur for clarity
+                }}
+              />
+            </motion.div>
           )}
         </AnimatePresence>
       </div>
