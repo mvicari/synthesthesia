@@ -96,6 +96,6 @@ Based on the research of **Dr. Milton Mermikides** into perceptual synesthesia. 
 
 * **Result:** Harmonically compatible notes (e.g., C and G) produce analogous colors (e.g., Red and Orange), ensuring visual harmony mirrors musical harmony.
 
-* **Source:** [Music of Light and Colour (Lecture)](https://www.youtube.com/watch?v=M9xN9M0fS0o)
+* **Source:** [Music of Light and Colour (Lecture)](https://www.youtube.com/live/U_qfzhXjziI)
 
 * **Website:** [miltonline.com](https://www.miltonline.com/)

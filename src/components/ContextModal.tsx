@@ -112,7 +112,7 @@ export const ContextModal: React.FC<ContextModalProps> = ({ isOpen, onClose, mod
               ) : (
                 <>
                   <a
-                    href="https://www.youtube.com/watch?v=M9xN9M0fS0o"
+                    href="https://www.youtube.com/live/U_qfzhXjziI"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-[10px] font-bold tracking-widest text-white transition-all hover:bg-white/10"
