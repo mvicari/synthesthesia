@@ -4,11 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface ContextModalProps {
   isOpen: boolean;
   onClose: () => void;
-  mode: 'synth' | 'mic';
+  mode: 'physics' | 'harmonic';
 }
 
 export const ContextModal: React.FC<ContextModalProps> = ({ isOpen, onClose, mode }) => {
-  const isPhysics = mode === 'synth';
+  const isPhysics = mode === 'physics';
 
   return (
     <AnimatePresence>

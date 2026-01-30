@@ -7,7 +7,7 @@ import { detectChord } from '../utils/chords';
 export interface NoteInfoCardProps {
     activeNotes: Set<number>;
     pitchBend?: number;
-    mode?: 'synth' | 'mic';
+    mode?: 'physics' | 'harmonic';
 }
 
 export const NoteInfoCard: React.FC<NoteInfoCardProps> = ({
@@ -34,7 +34,7 @@ export const NoteInfoCard: React.FC<NoteInfoCardProps> = ({
     // Calculate Color based on Mode (Theory)
     let blendColor = 'transparent';
     if (primaryFrequency > 0) {
-        if (mode === 'mic') {
+        if (mode === 'harmonic') {
             blendColor = allActiveFreqs.length > 1 ? getHarmonicMixColor(allActiveFreqs) : getHarmonicColor(primaryFrequency);
         } else {
             blendColor = allActiveFreqs.length > 1 ? getMixColor(allActiveFreqs) : frequencyToHSL(primaryFrequency);
@@ -62,9 +62,12 @@ export const NoteInfoCard: React.FC<NoteInfoCardProps> = ({
                             style={{ backgroundColor: blendColor, color: blendColor }}
                         />
 
-                        {mode === 'mic' ? (
+                        {mode === 'harmonic' ? (
                             (() => {
                                 const pitchInfo = getHarmonicPitchInfo(primaryFrequency);
+                                const saturation = allActiveFreqs.length > 0 
+                                    ? Math.round(90 - (Math.min(1, Math.max(0, (primaryFrequency - 100) / 1900)) * 70))
+                                    : 90;
                                 return (
                                     <>
                                         <span
@@ -94,8 +97,19 @@ export const NoteInfoCard: React.FC<NoteInfoCardProps> = ({
                                                 {pitchInfo.cents >= 0 ? '+' : ''}{pitchInfo.cents} cents
                                             </span>
                                         )}
+                                        {/* Saturation Meter for Harmonic Mode */}
+                                        <div className="mt-3 flex items-center gap-2">
+                                            <span className="text-[8px] text-white/30 font-mono uppercase">Saturation</span>
+                                            <div className="w-24 h-1 bg-white/10 rounded-full overflow-hidden">
+                                                <div 
+                                                    className="h-full bg-gradient-to-r from-pink-500 to-purple-500 transition-all duration-300"
+                                                    style={{ width: `${saturation}%` }}
+                                                />
+                                            </div>
+                                            <span className="text-[8px] text-white/40 font-mono">{saturation}%</span>
+                                        </div>
                                         <span className="mt-2 text-[10px] uppercase tracking-[0.2em] text-white/40 font-mono">
-                                            Harmonic • Circle of Fifths
+                                            Harmonic • Circle of Fifths • Mermikides 2026
                                         </span>
                                     </>
                                 );
@@ -132,8 +146,22 @@ export const NoteInfoCard: React.FC<NoteInfoCardProps> = ({
                                                 : `${frequencyTHz.toFixed(1)} THz (↑${octaveShift} octaves)`
                                             }
                                         </span>
+                                        {/* Octave Journey Indicator for Physics Mode */}
+                                        <div className="mt-3 flex items-center gap-2">
+                                            <span className="text-[8px] text-white/30 font-mono uppercase">Octave Shift</span>
+                                            <div className="w-32 h-1 bg-white/10 rounded-full overflow-hidden relative">
+                                                <div className="absolute inset-0 bg-gradient-to-r from-red-500 via-green-500 to-blue-500 opacity-30" />
+                                                <div 
+                                                    className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_5px_rgba(255,255,255,0.8)] transition-all duration-300"
+                                                    style={{ 
+                                                        left: `${Math.min(100, Math.max(0, ((octaveShift + 50) / 100) * 100))}%` 
+                                                    }}
+                                                />
+                                            </div>
+                                            <span className="text-[8px] text-white/40 font-mono">↑{octaveShift}</span>
+                                        </div>
                                         <span className="mt-2 text-[10px] uppercase tracking-[0.2em] text-white/40 font-mono">
-                                            F# to F Spectral Octave • Dorian Scale
+                                            F# to F Spectral Octave • Dorian Scale • Newton 1704
                                         </span>
                                     </>
                                 );

@@ -4,6 +4,9 @@ import { Visualizer, type Ripple, type VisualizerMode } from './components/Visua
 import { Wheels } from './components/Wheels';
 import { NoteInfoCard } from './components/NoteInfoCard';
 import { ContextModal } from './components/ContextModal';
+import { OctaveJourney } from './components/OctaveJourney';
+import { BoubaKikiTutorial } from './components/BoubaKikiTutorial';
+import { PlatosCaveMode } from './components/PlatosCaveMode';
 import { useAudio } from './utils/audio';
 import { NOTES, type Note } from './utils/notes';
 
@@ -13,8 +16,9 @@ function App() {
   const [ripples, setRipples] = useState<Ripple[]>([]);
   const [pitchBend, setPitchBend] = useState(0); // -2 to 2 semitones
   const [hasStarted, setHasStarted] = useState(false);
-  const [mode, setMode] = useState<VisualizerMode>('synth');
+  const [mode, setMode] = useState<VisualizerMode>('physics');
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [isBoubaKikiOpen, setIsBoubaKikiOpen] = useState(false);
   const [waveform, setWaveformState] = useState<OscillatorType>('sine');
 
   // Update Audio Engine when UI state changes
@@ -53,7 +57,6 @@ function App() {
     if (!hasStarted) {
       handleStart();
     }
-    initAudio();
     playTone(frequency);
     setActiveNotes(prev => {
       const newSet = new Set(prev);
@@ -72,14 +75,10 @@ function App() {
     });
   }, [stopTone]);
 
-  // Mode toggle handler
+  // Mode toggle handler: Switch between Newtonian physics and Mermikides harmonic models
   const handleModeToggle = useCallback(() => {
-    if (mode === 'synth') {
-      setMode('mic'); // 'mic' mode key now represents 'Harmonic Mode'
-    } else {
-      setMode('synth');
-    }
-  }, [mode]);
+    setMode(prev => prev === 'physics' ? 'harmonic' : 'physics');
+  }, []);
 
   // Physical Keyboard Input
   useEffect(() => {
@@ -177,6 +176,12 @@ function App() {
         analyser={analyser.current}
       />
 
+      {/* Octave Journey - shows the descent from light to sound */}
+      <OctaveJourney
+        frequency={activeNotes.size > 0 ? Array.from(activeNotes)[0] : 0}
+        isVisible={hasStarted && mode === 'physics'}
+      />
+
       {/* Start Overlay */}
       {!hasStarted && (
         <div
@@ -237,11 +242,11 @@ function App() {
                   px-4 py-2 rounded-full border border-white/20 backdrop-blur-md 
                   text-xs font-mono tracking-widest uppercase transition-all duration-300
                   hover:bg-white/10 active:scale-95
-                  ${mode === 'mic' ? 'shadow-[0_0_20px_rgba(236,72,153,0.3)] bg-pink-500/10 border-pink-500/30' : 'shadow-[0_0_20px_rgba(255,255,255,0.1)] bg-white/5'}
+                  ${mode === 'harmonic' ? 'shadow-[0_0_20px_rgba(236,72,153,0.3)] bg-pink-500/10 border-pink-500/30' : 'shadow-[0_0_20px_rgba(255,255,255,0.1)] bg-white/5'}
                 `}
               >
                 <span className="flex items-center gap-2">
-                  {mode === 'synth' ? (
+                  {mode === 'physics' ? (
                     <>
                       <span className="text-base md:text-lg">🎹</span>
                       <span className="hidden sm:inline">NEWTON (1704 Physics)</span>
@@ -262,6 +267,14 @@ function App() {
                 Press [M] to toggle
               </p>
             </div>
+
+            <button
+              onClick={() => setIsBoubaKikiOpen(true)}
+              className="mt-1 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/40 transition-all hover:bg-white/10 hover:text-white mr-2"
+              title="Bouba-Kiki Effect"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h.01"/><path d="M12 12h.01"/><path d="M16 12h.01"/></svg>
+            </button>
 
             <button
               onClick={() => setIsInfoOpen(true)}
@@ -309,7 +322,19 @@ function App() {
         onClose={() => setIsInfoOpen(false)}
         mode={mode}
       />
-    </div >
+
+      <BoubaKikiTutorial
+        isOpen={isBoubaKikiOpen}
+        onClose={() => setIsBoubaKikiOpen(false)}
+      />
+
+      {/* Plato's Cave Accessibility Mode */}
+      <PlatosCaveMode
+        isActive={hasStarted}
+        activeNotes={activeNotes}
+        onToggle={() => {}}
+      />
+    </div>
   );
 }
 

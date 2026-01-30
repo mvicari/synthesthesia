@@ -2,7 +2,14 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { frequencyToRGB, getMixColor, getHarmonicColor, getHarmonicMixColor } from '../utils/colors';
 
-export type VisualizerMode = 'synth' | 'mic';
+/**
+ * Visualizer modes representing two competing worldviews on music-color correspondence:
+ * - 'physics': Newtonian linear frequency mapping (Opticks, 1704)
+ * - 'harmonic': Perceptual harmonic mapping via Circle of Fifths (Mermikides, 2026)
+ * @see https://www.gutenberg.org/files/33504/33504-h/33504-h.htm
+ * @see https://www.gresham.ac.uk/watch-now/music-light-colour
+ */
+export type VisualizerMode = 'physics' | 'harmonic';
 
 export interface Ripple {
   id: string;
@@ -15,6 +22,7 @@ interface VisualizerProps {
   ripples: Ripple[];
   activeNotes: Set<number>;
   pitchBend?: number;
+  /** Current visualization mode: physics (Newton) or harmonic (Mermikides) */
   mode?: VisualizerMode;
   analyser?: AnalyserNode | null;
   waveform?: OscillatorType;
@@ -51,7 +59,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({
   // Calculate Color based on Mode (Theory)
   let blendColor = 'transparent';
   if (primaryFrequency > 0) {
-    if (mode === 'mic') {
+    if (mode === 'harmonic') {
       blendColor = allActiveFreqs.length > 1 ? getHarmonicMixColor(allActiveFreqs) : getHarmonicColor(primaryFrequency);
     } else {
       if (allActiveFreqs.length > 1) {
@@ -67,7 +75,24 @@ export const Visualizer: React.FC<VisualizerProps> = ({
   React.useEffect(() => {
     if (!analyser) return;
 
-    dataArrayRef.current = new Uint8Array(analyser.frequencyBinCount);
+    // Initialize data array only when analyser changes
+    if (!dataArrayRef.current || dataArrayRef.current.length !== analyser.frequencyBinCount) {
+      dataArrayRef.current = new Uint8Array(analyser.frequencyBinCount);
+    }
+    
+    // Setup canvas with proper DPR for crisp rendering
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (canvas && ctx) {
+      const dpr = window.devicePixelRatio || 1;
+      const displaySize = 800;
+      canvas.width = displaySize * dpr;
+      canvas.height = displaySize * dpr;
+      canvas.style.width = `${displaySize}px`;
+      canvas.style.height = `${displaySize}px`;
+      ctx.scale(dpr, dpr);
+    }
+    
     let animationId: number;
 
     const update = () => {
@@ -76,6 +101,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({
       const dataArray = dataArrayRef.current;
 
       if (analyser && dataArray) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         analyser.getByteTimeDomainData(dataArray as any);
 
         // Calculate average amplitude for overall sizing
@@ -89,8 +115,9 @@ export const Visualizer: React.FC<VisualizerProps> = ({
 
         // Draw Waveform
         if (ctx && canvas && hasActiveInput) {
-          const w = canvas.width;
-          const h = canvas.height;
+          // Use logical size for drawing (DPR scaling already applied)
+          const w = 800;
+          const h = 800;
           const cx = w / 2;
           const cy = h / 2;
 
@@ -198,7 +225,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({
         <AnimatePresence>
           {ripples.map((ripple) => {
             const freq = getBentFreq(ripple.frequency);
-            const color = mode === 'mic' ? getHarmonicColor(freq) : frequencyToRGB(freq);
+            const color = mode === 'harmonic' ? getHarmonicColor(freq) : frequencyToRGB(freq);
             const noteOpacity = getOpacity(freq);
             const rippleScale = 4 + (amplitude * 8);
 

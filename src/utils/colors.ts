@@ -1,3 +1,27 @@
+/**
+ * Color-to-Frequency Mapping Utilities
+ * 
+ * Implements two competing worldviews on the relationship between sound and light:
+ * 
+ * 1. NEWTONIAN PHYSICS MODEL (1704)
+ *    Based on Sir Isaac Newton's Opticks (Book I, Proposition VI)
+ *    - Maps D Dorian scale to visible spectrum via octave transposition
+ *    - Light spans ~1 octave; transposed down 41 octaves becomes audible
+ *    - Linear frequency mapping: Low pitch = Red, High pitch = Violet
+ *    @see https://www.gutenberg.org/files/33504/33504-h/33504-h.htm
+ * 
+ * 2. HARMONIC PERCEPTUAL MODEL (2026)
+ *    Based on Dr. Milton Mermikides' Gresham College Lecture
+ *    - Uses Circle of Fifths and synesthetic anchors (Scriabin)
+ *    - C = Red (human/earthly), D = Golden-yellow (transformation), F# = Blue-violet (transcendent)
+ *    - Higher octaves desaturate toward white (perceptual response)
+ *    @see https://www.gresham.ac.uk/watch-now/music-light-colour
+ * 
+ * "This secret analogy between light and sound leads one to suspect that all things 
+ *  in nature have their hidden rapports, which perhaps some day will be discovered." 
+ *  — Voltaire, Éléments de la philosophie de Newton (1738)
+ */
+
 // Physics constants
 const LIGHT_VELOCITY = 299792458; // m/s
 // Visible spectrum boundaries in Frequency (THz)
@@ -129,10 +153,26 @@ export const getMixColor = (frequencies: number[]): string => {
 
 /**
  * Scriabin/Mermikides Lookup Table (LUT) for Circle of Fifths
- * Index 0 corresponds to C (Red), moving by Perfect Fifths.
- * Hues updated for 2026 Edition accuracy.
+ * 
+ * Maps pitch classes to hues based on historical synesthetic anchors and the Circle of Fifths.
+ * Research by Itoh et al. (2017) found remarkable consistency across synaesthetes:
+ * - Cs are consistently perceived as RED
+ * - Ds lean toward GOLDEN-YELLOW  
+ * - Gs are associated with BLUE
+ * - Fs tend toward GREEN
+ * 
+ * Scriabin's specific anchors (used in Prometheus: The Poem of Fire, 1910):
+ * - C = Red (0°) — the human, earthly point of origin
+ * - D = Golden-yellow (60°) — transformation
+ * - F# = Blue-violet (270°) — the transcendent and divine
+ * 
+ * The array is indexed by Circle of Fifths position: C(0), G(1), D(2), A(3), E(4), B(5), 
+ * F#(6), C#(7), G#(8), D#(9), A#(10), F(11)
+ * 
+ * @see https://www.gresham.ac.uk/watch-now/music-light-colour
+ * @see Itoh, K., Sakata, H., & Kashino, M. (2017). Scientific Reports, 7(1), 17781
  */
-const SCRIABIN_HUES = [0, 30, 60, 120, 210, 260, 285, 315, 330, 340, 350, 355];
+const SCRIABIN_HUES = [0, 210, 60, 270, 120, 30, 240, 30, 260, 30, 285, 120];
 
 /**
  * Milton Mermikides' Harmonic Color Mapping using Circle of Fifths

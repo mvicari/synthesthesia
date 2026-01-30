@@ -1,3 +1,19 @@
+/**
+ * Musical Note Definitions
+ * 
+ * Defines the keyboard layout and frequencies based on standard 12-tone equal temperament.
+ * Frequencies calculated using A4 = 440Hz reference.
+ * 
+ * The mapping follows the D Dorian scale pattern (D-E-F-G-A-B-C) used by Newton 
+ * in his 1704 color-music correspondence in Opticks, Book I, Proposition VI.
+ * 
+ * Newton explicitly chose D Dorian (not major) for its symmetry and mathematical purity,
+ * forcing 7 colors to match the 7 notes of this modal scale.
+ * 
+ * @see Newton, I. (1704). Opticks. London: Royal Society
+ * @see https://www.gutenberg.org/files/33504/33504-h/33504-h.htm
+ */
+
 export interface Note {
   note: string;
   frequency: number;
@@ -5,7 +21,7 @@ export interface Note {
   type: 'white' | 'black';
 }
 
-// Starting from C3 (roughly)
+// Starting from C3 (roughly) - follows D Dorian pattern as per Newton's Opticks (1704)
 export const NOTES: Note[] = [
   { note: 'C', frequency: 261.63, key: 'a', type: 'white' },
   { note: 'C#', frequency: 277.18, key: 'w', type: 'black' },
