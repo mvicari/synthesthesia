@@ -175,14 +175,14 @@ export const PlatosCaveMode: React.FC<PlatosCaveModeProps> = ({
           </div>
         </div>
 
-        {/* Instructions */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center">
+        {/* Instructions - pointer-events-auto allows button clicks */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center pointer-events-auto">
           <p className="text-[10px] text-white/30 font-mono mb-2">
             "We mistake shadows for the thing itself"
           </p>
           <button
             onClick={() => setIsEnabled(false)}
-            className="px-4 py-2 rounded-full border border-white/10 bg-white/5 text-xs text-white/50 hover:bg-white/10 hover:text-white transition-all"
+            className="px-4 py-2 rounded-full border border-white/10 bg-white/5 text-xs text-white/50 hover:bg-white/10 hover:text-white transition-all pointer-events-auto"
           >
             Exit Cave (Press [)
           </button>
