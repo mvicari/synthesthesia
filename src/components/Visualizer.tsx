@@ -76,7 +76,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({
       const dataArray = dataArrayRef.current;
 
       if (analyser && dataArray) {
-        analyser.getByteTimeDomainData(dataArray as Uint8Array);
+        analyser.getByteTimeDomainData(dataArray as any);
 
         // Calculate average amplitude for overall sizing
         let sum = 0;
