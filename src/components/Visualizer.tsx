@@ -32,16 +32,14 @@ export const Visualizer: React.FC<VisualizerProps> = ({
   ripples,
   activeNotes,
   pitchBend = 0,
-  mode = 'synth',
+  mode = 'physics',
   analyser,
-  waveform = 'sine',
 }) => {
   // Helper to calculate bent frequency
   const getBentFreq = (baseFreq: number) => baseFreq * Math.pow(2, pitchBend / 12);
 
   const [amplitude, setAmplitude] = React.useState(0);
   const dataArrayRef = React.useRef<Uint8Array | null>(null);
-  const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
   // Determine Active Inputs
   const hasActiveInput = activeNotes.size > 0;
@@ -70,41 +68,21 @@ export const Visualizer: React.FC<VisualizerProps> = ({
     }
   }
 
-  const isSaw = waveform === 'sawtooth' || waveform === 'square';
-
   React.useEffect(() => {
     if (!analyser) return;
 
-    // Initialize data array only when analyser changes
     if (!dataArrayRef.current || dataArrayRef.current.length !== analyser.frequencyBinCount) {
       dataArrayRef.current = new Uint8Array(analyser.frequencyBinCount);
-    }
-    
-    // Setup canvas with proper DPR for crisp rendering
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (canvas && ctx) {
-      const dpr = window.devicePixelRatio || 1;
-      const displaySize = 800;
-      canvas.width = displaySize * dpr;
-      canvas.height = displaySize * dpr;
-      canvas.style.width = `${displaySize}px`;
-      canvas.style.height = `${displaySize}px`;
-      ctx.scale(dpr, dpr);
     }
     
     let animationId: number;
 
     const update = () => {
-      const canvas = canvasRef.current;
-      const ctx = canvas?.getContext('2d');
       const dataArray = dataArrayRef.current;
 
       if (analyser && dataArray) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         analyser.getByteTimeDomainData(dataArray as any);
 
-        // Calculate average amplitude for overall sizing
         let sum = 0;
         for (let i = 0; i < dataArray.length; i++) {
           const val = (dataArray[i] - 128) / 128;
@@ -112,72 +90,6 @@ export const Visualizer: React.FC<VisualizerProps> = ({
         }
         const rms = Math.sqrt(sum / dataArray.length);
         setAmplitude(rms);
-
-        // Draw Waveform
-        if (ctx && canvas && hasActiveInput) {
-          // Use logical size for drawing (DPR scaling already applied)
-          const w = 800;
-          const h = 800;
-          const cx = w / 2;
-          const cy = h / 2;
-
-          ctx.clearRect(0, 0, w, h);
-          ctx.beginPath();
-          ctx.strokeStyle = blendColor;
-          ctx.lineWidth = 4;
-          ctx.lineCap = isSaw ? 'butt' : 'round';
-          ctx.lineJoin = isSaw ? 'miter' : 'round';
-          
-          // Dynamics: Glow intensity linked to amplitude
-          ctx.shadowBlur = 10 + (rms * 40);
-          ctx.shadowColor = blendColor;
-
-          const bufferLength = dataArray.length;
-          const baseRadius = 100 + (rms * 100); // Dynamic scale
-
-          if (!isSaw) {
-            // SINE: Circular Waveform (Bouba)
-            for (let i = 0; i <= bufferLength; i++) {
-              const idx = i % bufferLength;
-              const angle = (i / bufferLength) * Math.PI * 2;
-              const v = (dataArray[idx] - 128) / 128;
-              const r = baseRadius + (v * 45);
-              const x = cx + Math.cos(angle) * r;
-              const y = cy + Math.sin(angle) * r;
-              if (i === 0) ctx.moveTo(x, y);
-              else ctx.lineTo(x, y);
-            }
-          } else {
-            // SAWTOOTH: Sharp Polygon (Kiki)
-            // Draw a jagged star-like shape or polygon
-            const sides = waveform === 'square' ? 4 : 3; // Square or Triangle base
-            for (let i = 0; i <= bufferLength; i++) {
-              const idx = i % bufferLength;
-              const angle = (i / bufferLength) * Math.PI * 2;
-              const v = (dataArray[idx] - 128) / 128;
-              
-              // Modulate radius with sawtooth jagginess
-              const cornerSharpness = Math.cos(angle * sides);
-              const r = baseRadius + (v * 60) + (cornerSharpness * 20);
-              
-              const x = cx + Math.cos(angle + amplitude) * r;
-              const y = cy + Math.sin(angle + amplitude) * r;
-              
-              if (i === 0) ctx.moveTo(x, y);
-              else ctx.lineTo(x, y);
-            }
-          }
-          ctx.closePath();
-          ctx.stroke();
-
-          // Internal Glow
-          ctx.globalAlpha = 0.1 + (rms * 0.3);
-          ctx.fillStyle = blendColor;
-          ctx.fill();
-          ctx.globalAlpha = 1.0;
-        } else if (ctx && canvas) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
       }
       animationId = requestAnimationFrame(update);
     };
@@ -187,22 +99,11 @@ export const Visualizer: React.FC<VisualizerProps> = ({
     return () => {
       cancelAnimationFrame(animationId);
     };
-  }, [analyser, blendColor, isSaw, hasActiveInput, waveform, amplitude]);
-
-  // 1. Timbre Mapping
-  const shapeStyle = isSaw
-    ? {
-      borderRadius: waveform === 'square' ? '4px' : '10%',
-      transform: `rotate(${amplitude * 720}deg)`,
-      border: '1px solid rgba(255,255,255,0.2)'
-    }
-    : { borderRadius: '50%' };
+  }, [analyser, hasActiveInput]);
 
   const getOpacity = (freq: number) => {
-    // Higher notes = more transparent/ethereal
-    // Lower notes = more solid
     const normalized = Math.min(1, Math.max(0, (freq - 200) / 800));
-    return 0.8 - (normalized * 0.6); // 0.8 at 200Hz, 0.2 at 1000Hz
+    return 0.7 - (normalized * 0.4);
   };
 
   return (
@@ -232,26 +133,24 @@ export const Visualizer: React.FC<VisualizerProps> = ({
             return (
               <React.Fragment key={ripple.id}>
                 <motion.div
-                  initial={{ scale: 0, opacity: 1, borderWidth: '3px', rotate: isSaw ? 45 : 0 }}
+                  initial={{ scale: 0, opacity: 0.8, borderWidth: '2px' }}
                   animate={{
                     scale: rippleScale,
                     opacity: 0,
                     borderWidth: '0px',
-                    rotate: isSaw ? 180 : 0,
                   }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 1.2, ease: "easeOut" }}
-                  className="absolute border box-content"
+                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  className="absolute border box-content rounded-full"
                   style={{
                     left: ripple.x,
                     top: ripple.y,
-                    width: '100px',
-                    height: '100px',
+                    width: '80px',
+                    height: '80px',
                     x: '-50%',
                     y: '-50%',
-                    borderRadius: isSaw ? (waveform === 'square' ? '4px' : '15%') : '50%',
                     borderColor: color,
-                    boxShadow: `0 0 ${30 + amplitude * 100}px ${color}`,
+                    boxShadow: `0 0 ${20 + amplitude * 60}px ${color}`,
                     opacity: noteOpacity,
                   }}
                 />
@@ -269,54 +168,21 @@ export const Visualizer: React.FC<VisualizerProps> = ({
               key="main-orb-glow"
               initial={{ scale: 0.5, opacity: 0, filter: 'blur(20px)' }}
               animate={{
-                scale: (1 + (amplitude * 2.5)),
+                scale: (1 + (amplitude * 2)),
                 opacity: getOpacity(primaryFrequency),
-                filter: `blur(${isSaw ? 2 : 45}px) brightness(${1 + amplitude * 3})`,
-                ...shapeStyle
+                filter: `blur(45px) brightness(${1 + amplitude * 2})`,
               }}
               exit={{ scale: 0, opacity: 0, filter: 'blur(10px)' }}
               transition={{
                 duration: 0.1,
                 opacity: { duration: 0.3 }
               }}
-              className="absolute w-96 h-96 mix-blend-screen"
+              className="absolute w-96 h-96 mix-blend-screen rounded-full"
               style={{
-                backgroundColor: isSaw ? 'transparent' : `${blendColor}44`,
-                boxShadow: isSaw
-                  ? `0 0 80px ${blendColor}88, inset 0 0 40px rgba(255,255,255,0.2)`
-                  : `0 0 ${150 + amplitude * 250}px ${blendColor}AA`,
+                backgroundColor: `${blendColor}44`,
+                boxShadow: `0 0 ${150 + amplitude * 200}px ${blendColor}AA`,
               }}
             />
-          )}
-        </AnimatePresence>
-
-        {/* Sharp Waveform Overlay */}
-        <AnimatePresence>
-          {hasActiveInput && (
-            <motion.div
-              key="main-orb-waveform"
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{
-                scale: (1 + (amplitude * 2.5)),
-                opacity: getOpacity(primaryFrequency),
-                ...shapeStyle,
-                transform: isSaw ? shapeStyle.transform : 'none',
-                border: 'none',
-              }}
-              exit={{ scale: 0, opacity: 0 }}
-              transition={{ duration: 0.1 }}
-              className="absolute w-96 h-96 mix-blend-screen pointer-events-none"
-            >
-              <canvas
-                ref={canvasRef}
-                width={800}
-                height={800}
-                className="w-full h-full"
-                style={{
-                  filter: `blur(${isSaw ? 0.5 : 1.5}px) drop-shadow(0 0 15px ${blendColor})`,
-                }}
-              />
-            </motion.div>
           )}
         </AnimatePresence>
       </div>

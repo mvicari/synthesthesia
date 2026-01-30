@@ -33,8 +33,8 @@ export const PlatosCaveMode: React.FC<PlatosCaveModeProps> = ({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Press 'P' for Plato's Cave
-      if (e.key.toLowerCase() === 'p' && !e.repeat) {
+      // Press '[' for Plato's Cave (avoids conflict with note keys)
+      if (e.key === '[' && !e.repeat) {
         setIsEnabled(prev => !prev);
       }
     };
@@ -49,7 +49,7 @@ export const PlatosCaveMode: React.FC<PlatosCaveModeProps> = ({
       <motion.button
         onClick={() => setIsEnabled(true)}
         className="absolute left-4 bottom-32 z-40 p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/30 hover:text-white/60 hover:bg-white/5 transition-all"
-        title="Plato's Cave Mode (Press P)"
+        title="Plato's Cave Mode (Press [)"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
@@ -184,7 +184,7 @@ export const PlatosCaveMode: React.FC<PlatosCaveModeProps> = ({
             onClick={() => setIsEnabled(false)}
             className="px-4 py-2 rounded-full border border-white/10 bg-white/5 text-xs text-white/50 hover:bg-white/10 hover:text-white transition-all"
           >
-            Exit Cave (Press P)
+            Exit Cave (Press [)
           </button>
         </div>
       </motion.div>
