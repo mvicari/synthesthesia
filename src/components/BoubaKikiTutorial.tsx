@@ -43,7 +43,7 @@ export const BoubaKikiTutorial: React.FC<BoubaKikiTutorialProps> = ({ isOpen, on
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-2 sm:p-4">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -58,7 +58,7 @@ export const BoubaKikiTutorial: React.FC<BoubaKikiTutorialProps> = ({ isOpen, on
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="relative w-full max-w-3xl overflow-hidden rounded-[2rem] border border-white/10 bg-gray-900/95 p-8 shadow-2xl"
+            className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl sm:rounded-[2rem] border border-white/10 bg-gray-900/95 p-4 sm:p-6 shadow-2xl"
           >
             {/* Close Button */}
             <button
@@ -72,23 +72,23 @@ export const BoubaKikiTutorial: React.FC<BoubaKikiTutorialProps> = ({ isOpen, on
             </button>
 
             {/* Header */}
-            <div className="mb-8 text-center">
-              <span className="mb-2 inline-block text-[10px] font-bold tracking-[0.3em] text-purple-400 uppercase">
+            <div className="mb-4 sm:mb-6 text-center">
+              <span className="mb-1 sm:mb-2 inline-block text-[9px] sm:text-[10px] font-bold tracking-[0.3em] text-purple-400 uppercase">
                 Cross-Modal Correspondence
               </span>
-              <h2 className="text-4xl font-thin tracking-wide text-white mb-2">
+              <h2 className="text-2xl sm:text-3xl font-thin tracking-wide text-white mb-1 sm:mb-2">
                 Bouba–Kiki Effect
               </h2>
-              <p className="text-sm text-white/50 font-light max-w-lg mx-auto">
+              <p className="text-xs sm:text-sm text-white/50 font-light max-w-md mx-auto">
                 "Seeing becomes hearing. Our brains are sensitive to shared structural features across senses."
               </p>
             </div>
 
             {/* Shape Comparison */}
-            <div className="grid grid-cols-2 gap-8 mb-8">
+            <div className="grid grid-cols-2 gap-3 sm:gap-6 mb-4 sm:mb-6">
               {/* Bouba */}
               <motion.div
-                className={`relative p-6 rounded-2xl border transition-all cursor-pointer ${
+                className={`relative p-3 sm:p-5 rounded-xl sm:rounded-2xl border transition-all cursor-pointer ${
                   activeShape === 'bouba' 
                     ? 'bg-purple-500/20 border-purple-500/50' 
                     : 'bg-white/5 border-white/10 hover:bg-white/10'
@@ -97,9 +97,9 @@ export const BoubaKikiTutorial: React.FC<BoubaKikiTutorialProps> = ({ isOpen, on
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <div className="aspect-square flex items-center justify-center mb-4">
+                <div className="aspect-square flex items-center justify-center mb-2 sm:mb-3">
                   {/* Rounded Bouba shape */}
-                  <svg viewBox="0 0 200 200" className="w-32 h-32">
+                  <svg viewBox="0 0 200 200" className="w-20 h-20 sm:w-28 sm:h-28">
                     <motion.path
                       d="M100,20 C150,20 180,60 180,100 C180,140 150,180 100,180 C50,180 20,140 20,100 C20,60 50,20 100,20"
                       fill="none"
@@ -118,17 +118,17 @@ export const BoubaKikiTutorial: React.FC<BoubaKikiTutorialProps> = ({ isOpen, on
                   </svg>
                 </div>
                 <div className="text-center">
-                  <h3 className="text-2xl font-light text-purple-200 mb-1">Bouba</h3>
-                  <p className="text-xs text-white/40 font-mono mb-2">SINE WAVEFORM</p>
-                  <p className="text-sm text-white/60">
-                    Rounded, smooth, gentle. Associated with rounded mouth shapes and soft audio transients.
+                  <h3 className="text-lg sm:text-2xl font-light text-purple-200 mb-0.5 sm:mb-1">Bouba</h3>
+                  <p className="text-[9px] sm:text-xs text-white/40 font-mono mb-1 sm:mb-2">SINE WAVEFORM</p>
+                  <p className="text-[10px] sm:text-xs text-white/60">
+                    Rounded, smooth, gentle.
                   </p>
                 </div>
               </motion.div>
 
               {/* Kiki */}
               <motion.div
-                className={`relative p-6 rounded-2xl border transition-all cursor-pointer ${
+                className={`relative p-3 sm:p-5 rounded-xl sm:rounded-2xl border transition-all cursor-pointer ${
                   activeShape === 'kiki' 
                     ? 'bg-orange-500/20 border-orange-500/50' 
                     : 'bg-white/5 border-white/10 hover:bg-white/10'
@@ -137,9 +137,9 @@ export const BoubaKikiTutorial: React.FC<BoubaKikiTutorialProps> = ({ isOpen, on
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <div className="aspect-square flex items-center justify-center mb-4">
+                <div className="aspect-square flex items-center justify-center mb-2 sm:mb-3">
                   {/* Jagged Kiki shape */}
-                  <svg viewBox="0 0 200 200" className="w-32 h-32">
+                  <svg viewBox="0 0 200 200" className="w-20 h-20 sm:w-28 sm:h-28">
                     <motion.path
                       d="M100,10 L130,70 L190,80 L145,120 L170,180 L100,150 L30,180 L55,120 L10,80 L70,70 Z"
                       fill="none"
@@ -155,27 +155,27 @@ export const BoubaKikiTutorial: React.FC<BoubaKikiTutorialProps> = ({ isOpen, on
                   </svg>
                 </div>
                 <div className="text-center">
-                  <h3 className="text-2xl font-light text-orange-200 mb-1">Kiki</h3>
-                  <p className="text-xs text-white/40 font-mono mb-2">SAWTOOTH WAVEFORM</p>
-                  <p className="text-sm text-white/60">
-                    Jagged, sharp, abrasive. Associated with spiky mouth shapes and sharp audio transients.
+                  <h3 className="text-lg sm:text-2xl font-light text-orange-200 mb-0.5 sm:mb-1">Kiki</h3>
+                  <p className="text-[9px] sm:text-xs text-white/40 font-mono mb-1 sm:mb-2">SAWTOOTH WAVEFORM</p>
+                  <p className="text-[10px] sm:text-xs text-white/60">
+                    Jagged, sharp, abrasive.
                   </p>
                 </div>
               </motion.div>
             </div>
 
             {/* Waveform Visualization */}
-            <div className="bg-black/40 rounded-xl p-6 border border-white/5">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs text-white/40 font-mono uppercase tracking-widest">
+            <div className="bg-black/40 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-white/5">
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
+                <span className="text-[10px] sm:text-xs text-white/40 font-mono uppercase tracking-widest">
                   Circular Waveform Mapping
                 </span>
-                <span className="text-[10px] text-white/30">
+                <span className="text-[9px] sm:text-[10px] text-white/30">
                   After Mermikides (2026)
                 </span>
               </div>
               
-              <div className="relative h-32 flex items-center justify-center">
+              <div className="relative h-20 sm:h-24 flex items-center justify-center">
                 {/* Bouba waveform */}
                 <svg viewBox="0 0 200 100" className="absolute left-0 w-1/2 h-full opacity-60">
                   <motion.path
@@ -209,19 +209,18 @@ export const BoubaKikiTutorial: React.FC<BoubaKikiTutorialProps> = ({ isOpen, on
                 </svg>
                 
                 {/* Center label */}
-                <div className="bg-gray-900/80 backdrop-blur px-4 py-2 rounded-full border border-white/10">
-                  <span className="text-xs text-white/50 font-mono">
-                    Press [V] to toggle in app
+                <div className="bg-gray-900/80 backdrop-blur px-2 sm:px-4 py-1 sm:py-2 rounded-full border border-white/10">
+                  <span className="text-[9px] sm:text-xs text-white/50 font-mono">
+                    Press [V] to toggle
                   </span>
                 </div>
               </div>
             </div>
 
             {/* Footer */}
-            <div className="mt-8 pt-6 border-t border-white/5 text-center">
-              <p className="text-[10px] text-white/30 font-mono">
-                "The tendency to map pitch onto vertical space... is innate in our culture; 
-                it is unquestioned and automatic."
+            <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-white/5 text-center">
+              <p className="text-[9px] sm:text-[10px] text-white/30 font-mono">
+                "The tendency to map pitch onto vertical space... is innate in our culture"
               </p>
             </div>
           </motion.div>

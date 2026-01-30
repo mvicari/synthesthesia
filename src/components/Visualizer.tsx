@@ -34,12 +34,15 @@ export const Visualizer: React.FC<VisualizerProps> = ({
   pitchBend = 0,
   mode = 'physics',
   analyser,
+  waveform = 'sine',
 }) => {
   // Helper to calculate bent frequency
   const getBentFreq = (baseFreq: number) => baseFreq * Math.pow(2, pitchBend / 12);
 
   const [amplitude, setAmplitude] = React.useState(0);
   const dataArrayRef = React.useRef<Uint8Array | null>(null);
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const isSaw = waveform === 'sawtooth' || waveform === 'square';
 
   // Determine Active Inputs
   const hasActiveInput = activeNotes.size > 0;
@@ -79,6 +82,8 @@ export const Visualizer: React.FC<VisualizerProps> = ({
 
     const update = () => {
       const dataArray = dataArrayRef.current;
+      const canvas = canvasRef.current;
+      const ctx = canvas?.getContext('2d');
 
       if (analyser && dataArray) {
         analyser.getByteTimeDomainData(dataArray as any);
@@ -90,6 +95,63 @@ export const Visualizer: React.FC<VisualizerProps> = ({
         }
         const rms = Math.sqrt(sum / dataArray.length);
         setAmplitude(rms);
+
+        // Draw waveform visualization
+        if (ctx && canvas && hasActiveInput) {
+          const dpr = window.devicePixelRatio || 1;
+          const size = 400;
+          canvas.width = size * dpr;
+          canvas.height = size * dpr;
+          canvas.style.width = `${size}px`;
+          canvas.style.height = `${size}px`;
+          ctx.scale(dpr, dpr);
+          
+          ctx.clearRect(0, 0, size, size);
+          ctx.beginPath();
+          ctx.strokeStyle = blendColor;
+          ctx.lineWidth = isSaw ? 2 : 3;
+          ctx.lineCap = isSaw ? 'butt' : 'round';
+          ctx.lineJoin = isSaw ? 'miter' : 'round';
+          ctx.shadowBlur = 20;
+          ctx.shadowColor = blendColor;
+
+          const cx = size / 2;
+          const cy = size / 2;
+          const bufferLength = dataArray.length;
+          const baseRadius = 80 + (rms * 60);
+
+          if (!isSaw) {
+            // SINE: Smooth circular waveform (Bouba)
+            for (let i = 0; i <= bufferLength; i++) {
+              const idx = i % bufferLength;
+              const angle = (i / bufferLength) * Math.PI * 2;
+              const v = (dataArray[idx] - 128) / 128;
+              const r = baseRadius + (v * 30);
+              const x = cx + Math.cos(angle) * r;
+              const y = cy + Math.sin(angle) * r;
+              if (i === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            }
+          } else {
+            // SAWTOOTH: Jagged star/polygon shape (Kiki)
+            const points = waveform === 'square' ? 4 : 3;
+            for (let i = 0; i <= bufferLength; i++) {
+              const idx = i % bufferLength;
+              const angle = (i / bufferLength) * Math.PI * 2;
+              const v = (dataArray[idx] - 128) / 128;
+              const cornerFactor = Math.abs(Math.cos(angle * points));
+              const r = baseRadius + (v * 40) + (cornerFactor * 25);
+              const x = cx + Math.cos(angle) * r;
+              const y = cy + Math.sin(angle) * r;
+              if (i === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            }
+          }
+          ctx.closePath();
+          ctx.stroke();
+        } else if (ctx && canvas) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
       }
       animationId = requestAnimationFrame(update);
     };
@@ -99,7 +161,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({
     return () => {
       cancelAnimationFrame(animationId);
     };
-  }, [analyser, hasActiveInput]);
+  }, [analyser, blendColor, hasActiveInput, isSaw, waveform]);
 
   const getOpacity = (freq: number) => {
     const normalized = Math.min(1, Math.max(0, (freq - 200) / 800));
@@ -185,6 +247,19 @@ export const Visualizer: React.FC<VisualizerProps> = ({
             />
           )}
         </AnimatePresence>
+
+        {/* Waveform Visualization Overlay */}
+        <canvas
+          ref={canvasRef}
+          className="absolute pointer-events-none"
+          style={{
+            width: '400px',
+            height: '400px',
+            filter: `blur(${isSaw ? 0.5 : 1}px) drop-shadow(0 0 10px ${blendColor})`,
+            opacity: hasActiveInput ? 0.8 : 0,
+            transition: 'opacity 0.3s ease',
+          }}
+        />
       </div>
     </div>
   );
