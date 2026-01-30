@@ -186,13 +186,12 @@ export const Visualizer: React.FC<VisualizerProps> = ({
 
       {/* WAVEFORM RIPPLES - Static shapes without expanding effect */}
       <div className="absolute inset-0">
-        <AnimatePresence>
+        <AnimatePresence mode="popLayout">
           {ripples.map((ripple) => {
             const freq = getBentFreq(ripple.frequency);
             const color = mode === 'harmonic' ? getHarmonicColor(freq) : frequencyToRGB(freq);
             const noteOpacity = getOpacity(freq);
 
-            // Generate waveform-based paths
             const generateWaveformPath = () => {
               const centerX = 50;
               const centerY = 50;
@@ -242,35 +241,34 @@ export const Visualizer: React.FC<VisualizerProps> = ({
             const pathD = generateWaveformPath();
 
             return (
-              <React.Fragment key={ripple.id}>
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: noteOpacity, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.5 }}
-                  transition={{ duration: 0.2 }}
-                  className="absolute pointer-events-none"
-                  style={{
-                    left: ripple.x,
-                    top: ripple.y,
-                    x: '-50%',
-                    y: '-50%',
-                  }}
-                >
-                  <svg width="100" height="100" viewBox="0 0 100 100" style={{ overflow: 'visible' }}>
-                    <motion.path
-                      d={pathD}
-                      fill="none"
-                      stroke={color}
-                      strokeWidth={ripple.waveform === 'sine' ? 2.5 : 2}
-                      strokeLinecap="round"
-                      strokeLinejoin={ripple.waveform === 'sine' ? 'round' : 'miter'}
-                      style={{
-                        filter: `drop-shadow(0 0 10px ${color})`,
-                      }}
-                    />
-                  </svg>
-                </motion.div>
-              </React.Fragment>
+              <motion.div
+                key={ripple.id}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: noteOpacity, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.3 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="absolute pointer-events-none"
+                style={{
+                  left: ripple.x,
+                  top: ripple.y,
+                  x: '-50%',
+                  y: '-50%',
+                }}
+              >
+                <svg width="100" height="100" viewBox="0 0 100 100" style={{ overflow: 'visible' }}>
+                  <motion.path
+                    d={pathD}
+                    fill="none"
+                    stroke={color}
+                    strokeWidth={ripple.waveform === 'sine' ? 2.5 : 2}
+                    strokeLinecap="round"
+                    strokeLinejoin={ripple.waveform === 'sine' ? 'round' : 'miter'}
+                    style={{
+                      filter: `drop-shadow(0 0 10px ${color})`,
+                    }}
+                  />
+                </svg>
+              </motion.div>
             );
           })}
         </AnimatePresence>
