@@ -149,16 +149,7 @@ export const NoteInfoCard: React.FC<NoteInfoCardProps> = ({
                                         {/* Octave Journey Indicator for Physics Mode */}
                                         <div className="mt-3 flex items-center gap-2">
                                             <span className="text-[8px] text-white/30 font-mono uppercase">Octave Shift</span>
-                                            <div className="w-32 h-1 bg-white/10 rounded-full overflow-hidden relative">
-                                                <div className="absolute inset-0 bg-gradient-to-r from-red-500 via-green-500 to-blue-500 opacity-30" />
-                                                <div 
-                                                    className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_5px_rgba(255,255,255,0.8)] transition-all duration-300"
-                                                    style={{ 
-                                                        left: `${Math.min(100, Math.max(0, ((octaveShift + 50) / 100) * 100))}%` 
-                                                    }}
-                                                />
-                                            </div>
-                                            <span className="text-[8px] text-white/40 font-mono">↑{octaveShift}</span>
+                                            <span className="text-[10px] text-white/60 font-mono">↓{octaveShift} octaves from visible light</span>
                                         </div>
                                         <span className="mt-2 text-[10px] uppercase tracking-[0.2em] text-white/40 font-mono">
                                             F# to F Spectral Octave • Dorian Scale • Newton 1704

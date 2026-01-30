@@ -4,7 +4,6 @@ import { Visualizer, type Ripple, type VisualizerMode } from './components/Visua
 import { Wheels } from './components/Wheels';
 import { NoteInfoCard } from './components/NoteInfoCard';
 import { ContextModal } from './components/ContextModal';
-import { OctaveJourney } from './components/OctaveJourney';
 import { BoubaKikiTutorial } from './components/BoubaKikiTutorial';
 import { PlatosCaveMode } from './components/PlatosCaveMode';
 import { useAudio } from './utils/audio';
@@ -174,12 +173,6 @@ function App() {
         mode={mode}
         waveform={waveform}
         analyser={analyser.current}
-      />
-
-      {/* Octave Journey - shows the descent from light to sound */}
-      <OctaveJourney
-        frequency={activeNotes.size > 0 ? Array.from(activeNotes)[0] : 0}
-        isVisible={hasStarted && mode === 'physics'}
       />
 
       {/* Start Overlay */}
