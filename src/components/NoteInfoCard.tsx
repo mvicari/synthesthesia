@@ -128,7 +128,7 @@ export const NoteInfoCard: React.FC<NoteInfoCardProps> = ({
                                             {frequencyTHz.toFixed(1)} THz (↑{octaveShift} octaves)
                                         </span>
                                         <span className="mt-2 text-[10px] uppercase tracking-[0.2em] text-white/40 font-mono">
-                                            Octave Doubling • Physics
+                                            F# to F Spectral Octave • Dorian Scale
                                         </span>
                                     </>
                                 );

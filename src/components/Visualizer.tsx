@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { frequencyToHSL, getMixColor, getHarmonicColor } from '../utils/colors';
+import { frequencyToRGB, getMixColor, getHarmonicColor } from '../utils/colors';
 
 export type VisualizerMode = 'synth' | 'mic';
 
@@ -57,12 +57,12 @@ export const Visualizer: React.FC<VisualizerProps> = ({
       if (allActiveFreqs.length > 1) {
         blendColor = getMixColor(allActiveFreqs);
       } else {
-        blendColor = frequencyToHSL(primaryFrequency);
+        blendColor = frequencyToRGB(primaryFrequency);
       }
     }
   }
 
-  const isSaw = waveform === 'sawtooth';
+  const isSaw = waveform === 'sawtooth' || waveform === 'square';
 
   React.useEffect(() => {
     if (!analyser) return;
@@ -98,16 +98,18 @@ export const Visualizer: React.FC<VisualizerProps> = ({
           ctx.beginPath();
           ctx.strokeStyle = blendColor;
           ctx.lineWidth = 4;
-          ctx.lineCap = 'round';
-          ctx.lineJoin = 'round';
-          ctx.shadowBlur = 15;
+          ctx.lineCap = isSaw ? 'butt' : 'round';
+          ctx.lineJoin = isSaw ? 'miter' : 'round';
+          
+          // Dynamics: Glow intensity linked to amplitude
+          ctx.shadowBlur = 10 + (rms * 40);
           ctx.shadowColor = blendColor;
 
           const bufferLength = dataArray.length;
-          const baseRadius = 100 + (rms * 50);
+          const baseRadius = 100 + (rms * 100); // Dynamic scale
 
           if (!isSaw) {
-            // SINE: Circular Waveform (Polar)
+            // SINE: Circular Waveform (Bouba)
             for (let i = 0; i <= bufferLength; i++) {
               const idx = i % bufferLength;
               const angle = (i / bufferLength) * Math.PI * 2;
@@ -119,32 +121,21 @@ export const Visualizer: React.FC<VisualizerProps> = ({
               else ctx.lineTo(x, y);
             }
           } else {
-            // SAWTOOTH: Square Waveform
-            const side = baseRadius * 1.6;
-            const halfSide = side / 2;
-
+            // SAWTOOTH: Sharp Polygon (Kiki)
+            // Draw a jagged star-like shape or polygon
+            const sides = waveform === 'square' ? 4 : 3; // Square or Triangle base
             for (let i = 0; i <= bufferLength; i++) {
               const idx = i % bufferLength;
-              const progress = (i / bufferLength) * 4;
+              const angle = (i / bufferLength) * Math.PI * 2;
               const v = (dataArray[idx] - 128) / 128;
-              const offset = v * 30;
-
-              let x = 0, y = 0;
-
-              if (progress <= 1) { // Top
-                x = cx - halfSide + progress * side;
-                y = cy - halfSide - offset;
-              } else if (progress <= 2) { // Right
-                x = cx + halfSide + offset;
-                y = cy - halfSide + (progress - 1) * side;
-              } else if (progress <= 3) { // Bottom
-                x = cx + halfSide - (progress - 2) * side;
-                y = cy + halfSide + offset;
-              } else { // Left
-                x = cx - halfSide - offset;
-                y = cy + halfSide - (progress - 3) * side;
-              }
-
+              
+              // Modulate radius with sawtooth jagginess
+              const cornerSharpness = Math.cos(angle * sides);
+              const r = baseRadius + (v * 60) + (cornerSharpness * 20);
+              
+              const x = cx + Math.cos(angle + amplitude) * r;
+              const y = cy + Math.sin(angle + amplitude) * r;
+              
               if (i === 0) ctx.moveTo(x, y);
               else ctx.lineTo(x, y);
             }
@@ -153,7 +144,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({
           ctx.stroke();
 
           // Internal Glow
-          ctx.globalAlpha = 0.15;
+          ctx.globalAlpha = 0.1 + (rms * 0.3);
           ctx.fillStyle = blendColor;
           ctx.fill();
           ctx.globalAlpha = 1.0;
@@ -165,21 +156,26 @@ export const Visualizer: React.FC<VisualizerProps> = ({
     };
 
     update();
-    return () => cancelAnimationFrame(animationId);
-  }, [analyser, blendColor, isSaw, hasActiveInput]);
+
+    return () => {
+      cancelAnimationFrame(animationId);
+    };
+  }, [analyser, blendColor, isSaw, hasActiveInput, waveform, amplitude]);
 
   // 1. Timbre Mapping
   const shapeStyle = isSaw
     ? {
-      borderRadius: '10%',
-      transform: `rotate(${amplitude * 360}deg)`,
-      border: '1px solid rgba(255,255,255,0.1)'
+      borderRadius: waveform === 'square' ? '4px' : '10%',
+      transform: `rotate(${amplitude * 720}deg)`,
+      border: '1px solid rgba(255,255,255,0.2)'
     }
     : { borderRadius: '50%' };
 
   const getOpacity = (freq: number) => {
-    const normalized = Math.min(1, Math.max(0, (freq - 250) / 400));
-    return 0.4 + (normalized * 0.5);
+    // Higher notes = more transparent/ethereal
+    // Lower notes = more solid
+    const normalized = Math.min(1, Math.max(0, (freq - 200) / 800));
+    return 0.8 - (normalized * 0.6); // 0.8 at 200Hz, 0.2 at 1000Hz
   };
 
   return (
@@ -189,10 +185,10 @@ export const Visualizer: React.FC<VisualizerProps> = ({
 
       <motion.div
         animate={{
-          opacity: [0.1, 0.2, 0.1],
-          scale: [1, 1.1, 1],
+          opacity: [0.1, 0.2 + (amplitude * 0.3), 0.1],
+          scale: [1, 1.05 + (amplitude * 0.2), 1],
         }}
-        transition={{ duration: 10, repeat: Infinity }}
+        transition={{ duration: 8, repeat: Infinity }}
         style={{ background: blendColor }}
         className="absolute inset-0 blur-[150px] mix-blend-screen pointer-events-none opacity-20"
       />
@@ -202,9 +198,9 @@ export const Visualizer: React.FC<VisualizerProps> = ({
         <AnimatePresence>
           {ripples.map((ripple) => {
             const freq = getBentFreq(ripple.frequency);
-            const color = mode === 'mic' ? getHarmonicColor(freq) : frequencyToHSL(freq);
+            const color = mode === 'mic' ? getHarmonicColor(freq) : frequencyToRGB(freq);
             const noteOpacity = getOpacity(freq);
-            const rippleScale = 4 + (amplitude * 5);
+            const rippleScale = 4 + (amplitude * 8);
 
             return (
               <React.Fragment key={ripple.id}>
@@ -214,10 +210,10 @@ export const Visualizer: React.FC<VisualizerProps> = ({
                     scale: rippleScale,
                     opacity: 0,
                     borderWidth: '0px',
-                    rotate: isSaw ? 135 : 0,
+                    rotate: isSaw ? 180 : 0,
                   }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  transition={{ duration: 1.2, ease: "easeOut" }}
                   className="absolute border box-content"
                   style={{
                     left: ripple.x,
@@ -226,9 +222,9 @@ export const Visualizer: React.FC<VisualizerProps> = ({
                     height: '100px',
                     x: '-50%',
                     y: '-50%',
-                    borderRadius: isSaw ? '10%' : '50%',
+                    borderRadius: isSaw ? (waveform === 'square' ? '4px' : '15%') : '50%',
                     borderColor: color,
-                    boxShadow: `0 0 50px ${color}`,
+                    boxShadow: `0 0 ${30 + amplitude * 100}px ${color}`,
                     opacity: noteOpacity,
                   }}
                 />
@@ -246,22 +242,22 @@ export const Visualizer: React.FC<VisualizerProps> = ({
               key="main-orb-glow"
               initial={{ scale: 0.5, opacity: 0, filter: 'blur(20px)' }}
               animate={{
-                scale: (1 + (amplitude * 2.0)),
+                scale: (1 + (amplitude * 2.5)),
                 opacity: getOpacity(primaryFrequency),
-                filter: `blur(${isSaw ? 4 : 45}px) brightness(${1 + amplitude * 2})`,
+                filter: `blur(${isSaw ? 2 : 45}px) brightness(${1 + amplitude * 3})`,
                 ...shapeStyle
               }}
               exit={{ scale: 0, opacity: 0, filter: 'blur(10px)' }}
               transition={{
                 duration: 0.1,
-                opacity: { duration: 0.5 }
+                opacity: { duration: 0.3 }
               }}
               className="absolute w-96 h-96 mix-blend-screen"
               style={{
-                backgroundColor: isSaw ? 'transparent' : `${blendColor}33`, // Slightly more visible fill
+                backgroundColor: isSaw ? 'transparent' : `${blendColor}44`,
                 boxShadow: isSaw
-                  ? `0 0 60px ${blendColor}66, inset 0 0 30px rgba(255,255,255,0.1)`
-                  : `0 0 ${120 + amplitude * 180}px ${blendColor}88`,
+                  ? `0 0 80px ${blendColor}88, inset 0 0 40px rgba(255,255,255,0.2)`
+                  : `0 0 ${150 + amplitude * 250}px ${blendColor}AA`,
               }}
             />
           )}
@@ -274,11 +270,11 @@ export const Visualizer: React.FC<VisualizerProps> = ({
               key="main-orb-waveform"
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{
-                scale: (1 + (amplitude * 2.0)),
+                scale: (1 + (amplitude * 2.5)),
                 opacity: getOpacity(primaryFrequency),
                 ...shapeStyle,
-                transform: isSaw ? shapeStyle.transform : 'none', // Apply rotation ONLY to sawtooth
-                border: 'none', // Remove inner border from waveform wrapper
+                transform: isSaw ? shapeStyle.transform : 'none',
+                border: 'none',
               }}
               exit={{ scale: 0, opacity: 0 }}
               transition={{ duration: 0.1 }}
@@ -290,7 +286,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({
                 height={800}
                 className="w-full h-full"
                 style={{
-                  filter: `blur(${isSaw ? 1 : 2}px) drop-shadow(0 0 10px ${blendColor})`, // Much lighter blur for clarity
+                  filter: `blur(${isSaw ? 0.5 : 1.5}px) drop-shadow(0 0 15px ${blendColor})`,
                 }}
               />
             </motion.div>

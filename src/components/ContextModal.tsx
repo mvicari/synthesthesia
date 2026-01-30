@@ -55,15 +55,15 @@ export const ContextModal: React.FC<ContextModalProps> = ({ isOpen, onClose, mod
             <div className="space-y-8">
               {/* History Section */}
               <div>
-                <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-white/50">Historical Legacy</h3>
+                <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-white/50">History</h3>
                 <p className="text-sm leading-relaxed text-gray-300 font-light">
                   {isPhysics ? (
                     <>
-                      In his 1704 work <em className="text-white italic">Opticks</em>, Sir Isaac Newton proposed a direct link between the spectrum of light and the musical scale. He identified <strong className="text-white">7 colors</strong> (Orange and Indigo) to match the seven-note musical scale. Most interestingly, he mapped the rainbow specifically to the <strong className="text-white">D Dorian</strong> scale because of its unique mathematical symmetry.
+                      In his 1704 work <em className="text-white italic">Opticks</em>, Sir Isaac Newton proposed a direct link between the spectrum of light and the musical scale. He even explicitly forced the rainbow to have <strong className="text-white">7 colors</strong> (adding Orange and Indigo) to create a mathematical correspondence with the 7 notes of the <strong className="text-white">D Dorian</strong> musical scale.
                     </>
                   ) : (
                     <>
-                      This model incorporates <strong className="text-white font-medium">Alexander Scriabin's</strong> synesthetic anchors from <em className="italic text-white">Prometheus</em> (1910). Scriabin viewed <strong className="text-red-400">C as "Earthly Red"</strong>, <strong className="text-yellow-400">D as "Golden-Yellow"</strong>, and <strong className="text-violet-400">F# as "Transcendent Blue-Violet."</strong> It prioritizes the "psychological" relationship of keys over physical frequency.
+                      Based on the <strong className="text-white">2026 Gresham College Lecture</strong> and modern research into <strong className="text-white font-medium">Dr. Milton Mermikides</strong>, this model argues that we hear music in circles, not straight lines. It prioritizes perceptual harmony over physical frequency.
                     </>
                   )}
                 </p>
@@ -79,7 +79,7 @@ export const ContextModal: React.FC<ContextModalProps> = ({ isOpen, onClose, mod
                     </>
                   ) : (
                     <>
-                      As explored by <strong className="text-white">Dr. Milton Mermikides</strong>, this mode treats the Circle of Fifths as a <strong className="text-white font-medium">"Dimmer Switch"</strong> for harmonic brightness. Notes a Perfect 5th apart (visual consonance) appear as analogous colors. This model suggests that harmony is a shape, and dissonance is a clash of hues.
+                      Based on the 2026 Gresham College Lecture and modern research into <strong className="text-white">perceptual synesthesia</strong> by <strong className="text-white font-medium">Dr. Milton Mermikides</strong>, this model argues that we hear music in circles, not straight lines. It prioritizes perceptual harmony over physical frequency.
                     </>
                   )}
                 </p>

@@ -244,14 +244,14 @@ function App() {
                   {mode === 'synth' ? (
                     <>
                       <span className="text-base md:text-lg">🎹</span>
-                      <span className="hidden sm:inline">PHYSICS</span>
+                      <span className="hidden sm:inline">NEWTON (1704 Physics)</span>
                       <span className="text-blue-300/40">•</span>
                       <span className="opacity-70">Octave Doubling</span>
                     </>
                   ) : (
                     <>
                       <span className="text-base md:text-lg">🎨</span>
-                      <span className="hidden sm:inline">HARMONIC</span>
+                      <span className="hidden sm:inline">MERMIKIDES (2026 Perceptual)</span>
                       <span className="text-pink-300/40">•</span>
                       <span className="opacity-70">Circle of Fifths</span>
                     </>

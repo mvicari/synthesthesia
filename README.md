@@ -13,25 +13,20 @@ Synthesthesia is a cross-modal exploration of the relationship between sound and
 4.  **Timbre:** Press **[V]** to toggle between Sine (Smooth) and Sawtooth (Jagged) waveforms.
 5.  **Pitch:** Use the **Mouse Wheel** or **[+/-]** keys to bend the overall pitch.
 
----
+## 🎨 Theory & Credits
 
-## 🧠 Theoretical Frameworks
+### Newton (1704 Physics)
+Based on Sir Isaac Newton’s 1704 work *Opticks*. Newton proposed a mathematical correspondence between the 7 notes of the **D Dorian** musical scale and the spectrum of light, explicitly forcing the rainbow to have **7 colors** (adding Orange and Indigo) to match.
+* **Method:** Linear octave doubling ($f \cdot 2^{40}$) to shift sound waves into the Terahertz (visible light) range.
+* **Result:** Low pitch = Red, High pitch = Violet.
+* **Source:** [Opticks (Project Gutenberg)](https://www.gutenberg.org/files/33504/33504-h/33504-h.htm)
 
-### 1. The Newtonian Mode (Physics)
-Inspired by Sir Isaac Newton’s 1704 work *Opticks*. This mode follows a linear mathematical formula ($f \cdot 2^{41}$) to shift audible frequencies into the Terahertz range of visible light.
-
-*   **Newton's Symmetry:** Newton explicitly mapped the rainbow to the **D Dorian** scale because of its unique mathematical symmetry.
-*   **The Seven Colors:** He identified seven primary colors (adding Orange and Indigo) to mirror the seven-note musical scale.
-*   **The 41st Octave:** Visible light spans roughly one octave; shifted down 41 times, it centers around middle C.
-
-### 2. The Mermikides Mode (Harmonic)
-Based on the modern research of **Dr. Milton Mermikides**. This model prioritizes perceptual harmony by mapping the **Circle of Fifths** to the Color Wheel.
-
-*   **Harmonic Brightness:** Movement along the Circle of Fifths acts as a "Dimmer Switch"—adding light or mutedness to the visual experience.
-*   **Scriabin's Anchors:** Incorporates Alexander Scriabin's synesthetic mappings: C is Red, D is Yellow, and F# is Blue-Violet.
-*   **Perceptual Consonance:** Harmonically compatible notes (like C and G) produce analogous colors, ensuring visual beauty mirrors musical consonance.
-
----
+### Mermikides (2026 Perceptual)
+Based on the **2026 Gresham College Lecture** by **Dr. Milton Mermikides**. This model organizes color by **harmonic relationship** (musical compatibility) using historical "synesthetic anchors" rather than raw frequency.
+* **Method:** Maps the **Circle of Fifths** to specific perceptual hues (Scriabin anchors). Includes dynamic saturation mapping (Pitch Height to Desaturation).
+* **Result:** Harmonically compatible notes (e.g., C and G) produce analogous colors (e.g., Red and Orange), ensuring visual harmony mirrors musical harmony.
+* **Source:** [Music of Light and Colour (Lecture)](https://www.youtube.com/watch?v=M9xN9M0fS0o)
+* **Website:** [miltonline.com](https://www.miltonline.com/)
 
 ## 🛠 Features
 

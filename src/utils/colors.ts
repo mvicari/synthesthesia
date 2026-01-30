@@ -130,14 +130,15 @@ export const getMixColor = (frequencies: number[]): string => {
 /**
  * Scriabin/Mermikides Lookup Table (LUT) for Circle of Fifths
  * Index 0 corresponds to C (Red), moving by Perfect Fifths.
+ * Hues updated for 2026 Edition accuracy.
  */
-const SCRIABIN_HUES = [0, 30, 60, 120, 210, 250, 280, 330, 20, 45, 345, 355];
+const SCRIABIN_HUES = [0, 30, 60, 120, 210, 260, 285, 315, 330, 340, 350, 355];
 
 /**
  * Milton Mermikides' Harmonic Color Mapping using Circle of Fifths
  * 
  * Maps musical pitch to color based on historical synesthetic anchors (Scriabin).
- * Includes "Saturation Logic": Higher pitches become desaturated (whiter).
+ * Includes "Pitch-to-Desaturation" logic: Higher frequencies reduce saturation.
  */
 export const getHarmonicColor = (frequency: number): string => {
   if (frequency <= 0) return 'hsl(0, 0%, 0%)';
@@ -149,11 +150,11 @@ export const getHarmonicColor = (frequency: number): string => {
   const circleIndex = (pitchClass * 7) % 12;
   const hue = SCRIABIN_HUES[circleIndex];
 
-  // Saturation Logic: Higher pitches are more desaturated (whiter)
-  // Base 200Hz - 85% sat, 1000Hz - 40% sat
-  const satProgress = Math.min(1, Math.max(0, (frequency - 200) / 1000));
-  const saturation = 90 - (satProgress * 50);
-  const lightness = 55 + (satProgress * 15);
+  // Dynamic Saturation: Higher pitches become "whiter" or "cooler"
+  // Base 100Hz - 90% sat, 2000Hz - 20% sat
+  const satProgress = Math.min(1, Math.max(0, (frequency - 100) / 1900));
+  const saturation = 90 - (satProgress * 70);
+  const lightness = 55 + (satProgress * 20);
 
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 };
