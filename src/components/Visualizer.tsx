@@ -124,23 +124,27 @@ export const Visualizer: React.FC<VisualizerProps> = ({
               else ctx.lineTo(x, y);
             }
           } else {
-            // SAWTOOTH: Sharp angular waveform (Kiki)
-            const teeth = waveform === 'square' ? 8 : 12;
+            // SAWTOOTH: Dynamic angular waveform (Kiki)
+            // Teeth respond to amplitude - more energy = more jagged
+            const baseTeeth = waveform === 'square' ? 6 : 8;
+            const dynamicTeeth = baseTeeth + Math.floor(rms * 16);
+            const teeth = dynamicTeeth;
+            // Amplitude affects tooth sharpness
+            const toothDepth = 25 + (rms * 45);
             for (let i = 0; i <= bufferLength; i++) {
               const idx = i % bufferLength;
               const angle = (i / bufferLength) * Math.PI * 2;
               const v = (dataArray[idx] - 128) / 128;
-              // Sharp sawtooth pattern: rapid rise, steep drop
+              // Dynamic sawtooth pattern
               const sawPhase = (angle * teeth) % (Math.PI * 2);
               let sawValue;
-              if (sawPhase < Math.PI) {
-                // Rising edge (steep)
-                sawValue = (sawPhase / Math.PI) * 2 - 1;
+              const dutyCycle = waveform === 'square' ? 0.5 : 0.1 + (rms * 0.3);
+              if (sawPhase < Math.PI * 2 * dutyCycle) {
+                sawValue = (sawPhase / (Math.PI * 2 * dutyCycle)) * 2 - 1;
               } else {
-                // Falling edge (sharp drop)
-                sawValue = ((Math.PI * 2 - sawPhase) / Math.PI) * 2 - 1;
+                sawValue = ((Math.PI * 2 - sawPhase) / (Math.PI * 2 * (1 - dutyCycle))) * 2 - 1;
               }
-              const r = baseRadius + (v * 30) + (sawValue * 35);
+              const r = baseRadius + (v * 20) + (sawValue * toothDepth);
               const x = cx + Math.cos(angle) * r;
               const y = cy + Math.sin(angle) * r;
               if (i === 0) ctx.moveTo(x, y);
