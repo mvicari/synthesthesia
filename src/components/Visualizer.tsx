@@ -124,27 +124,31 @@ export const Visualizer: React.FC<VisualizerProps> = ({
               else ctx.lineTo(x, y);
             }
           } else {
-            // SAWTOOTH: Dynamic angular waveform (Kiki)
-            // Teeth respond to amplitude - more energy = more jagged
-            const baseTeeth = waveform === 'square' ? 6 : 8;
-            const dynamicTeeth = baseTeeth + Math.floor(rms * 16);
+            const time = Date.now() / 1000;
+            const energy = Math.pow(rms, 0.7);
+            const baseTeeth = waveform === 'square' ? 4 : 6;
+            const dynamicTeeth = baseTeeth + Math.floor(energy * 24);
             const teeth = dynamicTeeth;
-            // Amplitude affects tooth sharpness
-            const toothDepth = 25 + (rms * 45);
+            const toothDepth = 20 + (energy * 60);
+            const rotationSpeed = 0.5 + (energy * 2);
+            const rotationOffset = time * rotationSpeed;
+            const secondaryMod = Math.sin(time * 3) * 0.3 * energy;
             for (let i = 0; i <= bufferLength; i++) {
               const idx = i % bufferLength;
-              const angle = (i / bufferLength) * Math.PI * 2;
+              const angle = (i / bufferLength) * Math.PI * 2 + rotationOffset;
               const v = (dataArray[idx] - 128) / 128;
-              // Dynamic sawtooth pattern
               const sawPhase = (angle * teeth) % (Math.PI * 2);
               let sawValue;
-              const dutyCycle = waveform === 'square' ? 0.5 : 0.1 + (rms * 0.3);
+              const dutyCycle = waveform === 'square' 
+                ? 0.3 + (energy * 0.4) + (secondaryMod * 0.2)
+                : 0.05 + (energy * 0.35) + (secondaryMod * 0.15);
               if (sawPhase < Math.PI * 2 * dutyCycle) {
-                sawValue = (sawPhase / (Math.PI * 2 * dutyCycle)) * 2 - 1;
+                sawValue = Math.pow(sawPhase / (Math.PI * 2 * dutyCycle), 0.7) * 2 - 1;
               } else {
-                sawValue = ((Math.PI * 2 - sawPhase) / (Math.PI * 2 * (1 - dutyCycle))) * 2 - 1;
+                sawValue = (Math.pow((Math.PI * 2 - sawPhase) / (Math.PI * 2 * (1 - dutyCycle)), 0.7)) * 2 - 1;
               }
-              const r = baseRadius + (v * 20) + (sawValue * toothDepth);
+              const tertiaryMod = Math.sin(angle * teeth * 3 + time * 5) * 5 * energy;
+              const r = baseRadius + (v * 25) + (sawValue * toothDepth) + tertiaryMod;
               const x = cx + Math.cos(angle) * r;
               const y = cy + Math.sin(angle) * r;
               if (i === 0) ctx.moveTo(x, y);
