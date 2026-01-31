@@ -82,6 +82,22 @@ export const Visualizer: React.FC<VisualizerProps> = ({
     return color;
   };
 
+  // Helper to create a brighter waveform color for better contrast (especially in harmonic mode)
+  const getWaveformColor = (color: string): string => {
+    if (color.startsWith('hsl')) {
+      // For HSL colors, increase lightness and saturation for waveform visibility
+      const match = color.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
+      if (match) {
+        const h = parseInt(match[1]);
+        const s = Math.min(100, parseInt(match[2]) + 20); // Boost saturation
+        const l = Math.min(85, parseInt(match[3]) + 25); // Brighten significantly
+        return `hsl(${h}, ${s}%, ${l}%)`;
+      }
+    }
+    // For RGB colors (physics mode), return as-is since they already have good contrast
+    return color;
+  };
+
   // Calculate Color based on Mode (Theory)
   let blendColor = 'transparent';
   if (primaryFrequency > 0) {
@@ -100,11 +116,14 @@ export const Visualizer: React.FC<VisualizerProps> = ({
     }
   }
 
+  // Generate contrasting waveform color (brighter for harmonic mode)
+  const waveformColor = mode === 'harmonic' ? getWaveformColor(blendColor) : blendColor;
+
   // Store stable refs for the animation loop to avoid restarting it
-  const renderConfig = useRef({ blendColor, isSaw, waveform, hasActiveInput });
+  const renderConfig = useRef({ blendColor, waveformColor, isSaw, waveform, hasActiveInput, mode });
   useEffect(() => {
-    renderConfig.current = { blendColor, isSaw, waveform, hasActiveInput };
-  }, [blendColor, isSaw, waveform, hasActiveInput]);
+    renderConfig.current = { blendColor, waveformColor, isSaw, waveform, hasActiveInput, mode };
+  }, [blendColor, waveformColor, isSaw, waveform, hasActiveInput, mode]);
 
   useEffect(() => {
     if (!analyser) return;
@@ -155,12 +174,12 @@ export const Visualizer: React.FC<VisualizerProps> = ({
 
           ctx.clearRect(0, 0, width, height);
           ctx.beginPath();
-          ctx.strokeStyle = config.blendColor;
+          ctx.strokeStyle = config.waveformColor;
           ctx.lineWidth = config.isSaw ? 2 : 3;
           ctx.lineCap = 'round';
           ctx.lineJoin = 'round';
-          ctx.shadowBlur = 20;
-          ctx.shadowColor = config.blendColor;
+          ctx.shadowBlur = 25;
+          ctx.shadowColor = config.waveformColor;
 
           const cy = height / 2;
           const bufferLength = dataArray.length;
@@ -284,7 +303,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({
           ref={canvasRef}
           className="w-full h-[400px] pointer-events-none"
           style={{
-            filter: `drop-shadow(0 0 15px ${blendColor})`,
+            filter: `drop-shadow(0 0 15px ${waveformColor})`,
             opacity: hasActiveInput ? 0.9 : 0,
             transition: 'opacity 0.3s ease',
           }}
