@@ -82,30 +82,47 @@ export const Visualizer: React.FC<VisualizerProps> = ({
     return color;
   };
 
-  // Helper to create a bright waveform color for contrast (especially in harmonic mode)
-  // Physics mode naturally produces bright/white waveforms - we emulate this for harmonic mode
-  const getWaveformColor = (color: string): string => {
+  // Helper to create a desaturated background color (like physics mode's natural washout)
+  // Physics mode has naturally desaturated/muted backgrounds - we emulate this for harmonic mode
+  const getBackgroundColor = (color: string): string => {
     if (color.startsWith('hsl')) {
-      // For HSL colors, push toward white by drastically reducing saturation and increasing lightness
       const match = color.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
       if (match) {
         const h = parseInt(match[1]);
-        // Reduce saturation significantly to desaturate toward white
-        const s = Math.max(10, parseInt(match[2]) - 50);
-        // Push lightness very high for bright white-ish appearance
-        const l = Math.min(95, parseInt(match[3]) + 40);
+        // Heavily desaturate for muted background (like physics mode's washout)
+        const s = Math.max(15, parseInt(match[2]) * 0.25);
+        // Slightly reduce lightness for subtle background
+        const l = Math.min(70, parseInt(match[3]) * 0.9);
         return `hsl(${h}, ${s}%, ${l}%)`;
       }
     }
-    // For RGB colors (physics mode), return as-is since they already have good contrast
+    return color;
+  };
+
+  // Helper to create a bright waveform color for contrast
+  // Physics mode naturally produces bright waveforms - we emulate this for harmonic mode
+  const getWaveformColor = (color: string): string => {
+    if (color.startsWith('hsl')) {
+      const match = color.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
+      if (match) {
+        const h = parseInt(match[1]);
+        // Low saturation, high lightness for bright white-ish waveform
+        const s = Math.max(5, parseInt(match[2]) * 0.15);
+        const l = Math.min(95, parseInt(match[3]) + 35);
+        return `hsl(${h}, ${s}%, ${l}%)`;
+      }
+    }
     return color;
   };
 
   // Calculate Color based on Mode (Theory)
   let blendColor = 'transparent';
+  let baseHarmonicColor = 'transparent'; // Original saturated color for info card
   if (primaryFrequency > 0) {
     if (mode === 'harmonic') {
-      blendColor = allActiveFreqs.length > 1 ? getHarmonicMixColor(allActiveFreqs) : getHarmonicColor(primaryFrequency);
+      baseHarmonicColor = allActiveFreqs.length > 1 ? getHarmonicMixColor(allActiveFreqs) : getHarmonicColor(primaryFrequency);
+      // Use desaturated version for background splash (like physics mode)
+      blendColor = getBackgroundColor(baseHarmonicColor);
     } else if (physicsSubMode === '7band') {
       // Newton's discrete 7-band mode
       blendColor = allActiveFreqs.length > 1 ? getNewton7BandMixColor(allActiveFreqs) : getNewton7BandColor(primaryFrequency);
@@ -119,14 +136,14 @@ export const Visualizer: React.FC<VisualizerProps> = ({
     }
   }
 
-  // Generate contrasting waveform color (brighter for harmonic mode)
-  const waveformColor = mode === 'harmonic' ? getWaveformColor(blendColor) : blendColor;
+  // Generate contrasting waveform color (bright for harmonic mode to stand out against desaturated bg)
+  const waveformColor = mode === 'harmonic' ? getWaveformColor(baseHarmonicColor) : blendColor;
 
   // Store stable refs for the animation loop to avoid restarting it
-  const renderConfig = useRef({ blendColor, waveformColor, isSaw, waveform, hasActiveInput, mode });
+  const renderConfig = useRef({ blendColor, waveformColor, isSaw, waveform, hasActiveInput, mode, baseHarmonicColor });
   useEffect(() => {
-    renderConfig.current = { blendColor, waveformColor, isSaw, waveform, hasActiveInput, mode };
-  }, [blendColor, waveformColor, isSaw, waveform, hasActiveInput, mode]);
+    renderConfig.current = { blendColor, waveformColor, isSaw, waveform, hasActiveInput, mode, baseHarmonicColor };
+  }, [blendColor, waveformColor, isSaw, waveform, hasActiveInput, mode, baseHarmonicColor]);
 
   useEffect(() => {
     if (!analyser) return;
