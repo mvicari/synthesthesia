@@ -124,14 +124,23 @@ export const Visualizer: React.FC<VisualizerProps> = ({
               else ctx.lineTo(x, y);
             }
           } else {
-            // SAWTOOTH: Jagged star/polygon shape (Kiki)
-            const points = waveform === 'square' ? 4 : 3;
+            // SAWTOOTH: Sharp angular waveform (Kiki)
+            const teeth = waveform === 'square' ? 8 : 12;
             for (let i = 0; i <= bufferLength; i++) {
               const idx = i % bufferLength;
               const angle = (i / bufferLength) * Math.PI * 2;
               const v = (dataArray[idx] - 128) / 128;
-              const cornerFactor = Math.abs(Math.cos(angle * points));
-              const r = baseRadius + (v * 40) + (cornerFactor * 25);
+              // Sharp sawtooth pattern: rapid rise, steep drop
+              const sawPhase = (angle * teeth) % (Math.PI * 2);
+              let sawValue;
+              if (sawPhase < Math.PI) {
+                // Rising edge (steep)
+                sawValue = (sawPhase / Math.PI) * 2 - 1;
+              } else {
+                // Falling edge (sharp drop)
+                sawValue = ((Math.PI * 2 - sawPhase) / Math.PI) * 2 - 1;
+              }
+              const r = baseRadius + (v * 30) + (sawValue * 35);
               const x = cx + Math.cos(angle) * r;
               const y = cy + Math.sin(angle) * r;
               if (i === 0) ctx.moveTo(x, y);
