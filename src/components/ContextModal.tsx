@@ -1,28 +1,18 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ContextModalProps {
   isOpen: boolean;
   onClose: () => void;
   mode: 'physics' | 'harmonic';
-  analyser?: AnalyserNode | null;
-  waveform?: OscillatorType;
-  activeNotes?: Set<number>;
 }
 
 export const ContextModal: React.FC<ContextModalProps> = ({
   isOpen,
   onClose,
-  mode,
-  analyser,
-  waveform = 'sine',
-  activeNotes = new Set()
+  mode
 }) => {
   const isPhysics = mode === 'physics';
-  const dataArrayRef = useRef<Uint8Array | null>(null);
-  const [borderPath, setBorderPath] = useState('');
-  const [borderColor, setBorderColor] = useState('rgba(255,255,255,0.1)');
-  const isSaw = waveform === 'sawtooth' || waveform === 'square';
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -34,124 +24,6 @@ export const ContextModal: React.FC<ContextModalProps> = ({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
-
-  useEffect(() => {
-    if (!isOpen || !analyser) return;
-
-    if (!dataArrayRef.current || dataArrayRef.current.length !== analyser.frequencyBinCount) {
-      dataArrayRef.current = new Uint8Array(analyser.frequencyBinCount);
-    }
-
-    let animationId: number;
-
-    const update = () => {
-      const dataArray = dataArrayRef.current;
-      if (analyser && dataArray) {
-        analyser.getByteTimeDomainData(dataArray as any);
-
-        let sum = 0;
-        for (let i = 0; i < dataArray.length; i++) {
-          const val = (dataArray[i] - 128) / 128;
-          sum += val * val;
-        }
-        const rms = Math.sqrt(sum / dataArray.length);
-
-        const width = 600;
-        const height = 400;
-        const padding = 20;
-        const segments = 64;
-
-        let path = '';
-
-        for (let i = 0; i <= segments; i++) {
-          const x = (i / segments) * width;
-          const dataIdx = Math.min(dataArray.length - 1, Math.floor((i / segments) * dataArray.length));
-          const v = (dataArray[dataIdx] - 128) / 128;
-
-          if (isSaw) {
-            const teeth = 8 + Math.floor(rms * 16);
-            const phase = (i / segments) * teeth * Math.PI * 2;
-            const toothVal = (phase % (Math.PI * 2)) / (Math.PI * 2);
-            const y = padding + (toothVal > 0.5 ? -1 : 1) * (5 + rms * 15) + v * 5;
-            path += i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`;
-          } else {
-            const wave = Math.sin((i / segments) * Math.PI * 4) * (3 + rms * 12) + v * 8;
-            const y = padding + wave;
-            path += i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`;
-          }
-        }
-
-        for (let i = 0; i <= segments; i++) {
-          const y = padding + (i / segments) * height;
-          const dataIdx = Math.min(dataArray.length - 1, Math.floor((i / segments) * dataArray.length));
-          const v = (dataArray[dataIdx] - 128) / 128;
-
-          if (isSaw) {
-            const teeth = 6 + Math.floor(rms * 12);
-            const phase = (i / segments) * teeth * Math.PI * 2;
-            const toothVal = (phase % (Math.PI * 2)) / (Math.PI * 2);
-            const x = width + padding + (toothVal > 0.5 ? 1 : -1) * (5 + rms * 15) + v * 5;
-            path += ` L ${x} ${y}`;
-          } else {
-            const wave = Math.cos((i / segments) * Math.PI * 4) * (3 + rms * 12) + v * 8;
-            const x = width + padding + wave;
-            path += ` L ${x} ${y}`;
-          }
-        }
-
-        for (let i = segments; i >= 0; i--) {
-          const x = (i / segments) * width;
-          const dataIdx = Math.min(dataArray.length - 1, Math.floor((i / segments) * dataArray.length));
-          const v = (dataArray[dataIdx] - 128) / 128;
-
-          if (isSaw) {
-            const teeth = 8 + Math.floor(rms * 16);
-            const phase = (i / segments) * teeth * Math.PI * 2;
-            const toothVal = (phase % (Math.PI * 2)) / (Math.PI * 2);
-            const y = height + padding + (toothVal > 0.5 ? 1 : -1) * (5 + rms * 15) + v * 5;
-            path += ` L ${x} ${y}`;
-          } else {
-            const wave = Math.sin((i / segments) * Math.PI * 4) * (3 + rms * 12) + v * 8;
-            const y = height + padding + wave;
-            path += ` L ${x} ${y}`;
-          }
-        }
-
-        for (let i = segments; i >= 0; i--) {
-          const y = padding + (i / segments) * height;
-          const dataIdx = Math.min(dataArray.length - 1, Math.floor((i / segments) * dataArray.length));
-          const v = (dataArray[dataIdx] - 128) / 128;
-
-          if (isSaw) {
-            const teeth = 6 + Math.floor(rms * 12);
-            const phase = (i / segments) * teeth * Math.PI * 2;
-            const toothVal = (phase % (Math.PI * 2)) / (Math.PI * 2);
-            const x = padding + (toothVal > 0.5 ? -1 : 1) * (5 + rms * 15) + v * 5;
-            path += ` L ${x} ${y}`;
-          } else {
-            const wave = Math.cos((i / segments) * Math.PI * 4) * (3 + rms * 12) + v * 8;
-            const x = padding + wave;
-            path += ` L ${x} ${y}`;
-          }
-        }
-
-        path += ' Z';
-        setBorderPath(path);
-
-        if (activeNotes.size > 0) {
-          const hue = isPhysics ?
-            (Array.from(activeNotes)[0] / 2000) * 360 :
-            ((Array.from(activeNotes)[0] % 12) / 12) * 360;
-          setBorderColor(`hsla(${hue}, 80%, 60%, ${0.3 + rms * 0.5})`);
-        }
-      }
-
-      animationId = requestAnimationFrame(update);
-    };
-
-    update();
-    return () => cancelAnimationFrame(animationId);
-  }, [isOpen, analyser, waveform, isSaw, activeNotes, isPhysics]);
 
   return (
     <AnimatePresence>
@@ -166,34 +38,11 @@ export const ContextModal: React.FC<ContextModalProps> = ({
           />
 
           <div className="relative">
-            <svg
-              className="absolute -inset-4 pointer-events-none"
-              style={{ width: 'calc(100% + 32px)', height: 'calc(100% + 32px)' }}
-              viewBox="0 0 640 480"
-              preserveAspectRatio="none"
-            >
-              <motion.path
-                d={borderPath || `M 20 20 L 620 20 L 620 460 L 20 460 Z`}
-                fill="none"
-                stroke={borderColor}
-                strokeWidth={isSaw ? 4 : 3}
-                strokeLinecap={isSaw ? "butt" : "round"}
-                strokeLinejoin={isSaw ? "miter" : "round"}
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                exit={{ pathLength: 0, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                style={{
-                  filter: `drop-shadow(0 0 ${isSaw ? 20 : 15}px ${borderColor})`,
-                }}
-              />
-            </svg>
-
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative w-full max-w-xl overflow-hidden rounded-[2rem] bg-gray-900/90 p-8 shadow-2xl backdrop-blur-2xl"
+              className="relative w-full max-w-xl overflow-hidden rounded-[2rem] bg-gray-900/90 p-8 shadow-2xl backdrop-blur-2xl border border-white/10"
             >
               <button
                 onClick={onClose}
