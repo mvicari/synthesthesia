@@ -11,16 +11,7 @@ import { frequencyToRGB, getMixColor, getHarmonicColor, getHarmonicMixColor } fr
  */
 export type VisualizerMode = 'physics' | 'harmonic';
 
-export interface Ripple {
-  id: string;
-  frequency: number;
-  x: number;
-  y: number;
-  waveform: OscillatorType;
-}
-
 interface VisualizerProps {
-  ripples: Ripple[];
   activeNotes: Set<number>;
   pitchBend?: number;
   /** Current visualization mode: physics (Newton) or harmonic (Mermikides) */
@@ -30,7 +21,6 @@ interface VisualizerProps {
 }
 
 export const Visualizer: React.FC<VisualizerProps> = ({
-  ripples,
   activeNotes,
   pitchBend = 0,
   mode = 'physics',
@@ -183,96 +173,6 @@ export const Visualizer: React.FC<VisualizerProps> = ({
         style={{ background: blendColor }}
         className="absolute inset-0 blur-[150px] mix-blend-screen pointer-events-none opacity-20"
       />
-
-      {/* WAVEFORM RIPPLES - Static shapes without expanding effect */}
-      <div className="absolute inset-0">
-        <AnimatePresence mode="popLayout">
-          {ripples.map((ripple) => {
-            const freq = getBentFreq(ripple.frequency);
-            const color = mode === 'harmonic' ? getHarmonicColor(freq) : frequencyToRGB(freq);
-            const noteOpacity = getOpacity(freq);
-
-            const generateWaveformPath = () => {
-              const centerX = 50;
-              const centerY = 50;
-              const baseRadius = 35;
-              const waveAmplitude = 8;
-              const segments = 64;
-
-              if (ripple.waveform === 'sine') {
-                return Array.from({ length: segments + 1 }, (_, i) => {
-                  const angle = (i / segments) * Math.PI * 2;
-                  const wave = Math.sin(angle * 4) * waveAmplitude;
-                  const r = baseRadius + wave;
-                  const x = centerX + Math.cos(angle) * r;
-                  const y = centerY + Math.sin(angle) * r;
-                  return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
-                }).join(' ') + ' Z';
-              } else if (ripple.waveform === 'square') {
-                return Array.from({ length: segments + 1 }, (_, i) => {
-                  const angle = (i / segments) * Math.PI * 2;
-                  const normalized = (angle / (Math.PI * 2)) * 4;
-                  const phase = normalized % 1;
-                  let waveOffset = 0;
-                  if (phase < 0.5) {
-                    waveOffset = waveAmplitude;
-                  } else {
-                    waveOffset = -waveAmplitude;
-                  }
-                  const r = baseRadius + waveOffset;
-                  const x = centerX + Math.cos(angle) * r;
-                  const y = centerY + Math.sin(angle) * r;
-                  return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
-                }).join(' ') + ' Z';
-              } else {
-                return Array.from({ length: segments + 1 }, (_, i) => {
-                  const angle = (i / segments) * Math.PI * 2;
-                  const normalized = (angle / (Math.PI * 2)) * 3;
-                  const phase = normalized % 1;
-                  const waveOffset = (phase * 2 - 1) * waveAmplitude;
-                  const r = baseRadius + waveOffset;
-                  const x = centerX + Math.cos(angle) * r;
-                  const y = centerY + Math.sin(angle) * r;
-                  return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
-                }).join(' ') + ' Z';
-              }
-            };
-
-            const pathD = generateWaveformPath();
-
-            return (
-              <motion.div
-                key={ripple.id}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: noteOpacity, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.3 }}
-                transition={{ duration: 0.15, ease: "easeOut" }}
-                className="absolute pointer-events-none"
-                style={{
-                  left: ripple.x,
-                  top: ripple.y,
-                  x: '-50%',
-                  y: '-50%',
-                }}
-              >
-                <svg width="100" height="100" viewBox="0 0 100 100" style={{ overflow: 'visible' }}>
-                  <motion.path
-                    d={pathD}
-                    fill="none"
-                    stroke={color}
-                    strokeWidth={ripple.waveform === 'sine' ? 2.5 : 2}
-                    strokeLinecap="round"
-                    strokeLinejoin={ripple.waveform === 'sine' ? 'round' : 'miter'}
-                    style={{
-                      filter: `drop-shadow(0 0 10px ${color})`,
-                    }}
-                  />
-                </svg>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
-      </div>
 
       {/* Sustained Active Note Orb */}
       <div className="absolute inset-0 flex items-center justify-center">

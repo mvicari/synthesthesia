@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Keyboard } from './components/Keyboard';
-import { Visualizer, type Ripple, type VisualizerMode } from './components/Visualizer';
+import { Visualizer, type VisualizerMode } from './components/Visualizer';
 import { Wheels } from './components/Wheels';
 import { NoteInfoCard } from './components/NoteInfoCard';
 import { ContextModal } from './components/ContextModal';
@@ -11,7 +11,6 @@ import { NOTES, type Note } from './utils/notes';
 function App() {
   const { playTone, stopTone, initAudio, setPitchBend: setAudioPitch, setWaveform, analyser } = useAudio();
   const [activeNotes, setActiveNotes] = useState<Set<number>>(new Set());
-  const [ripples, setRipples] = useState<Ripple[]>([]);
   const [pitchBend, setPitchBend] = useState(0); // -2 to 2 semitones
   const [hasStarted, setHasStarted] = useState(false);
   const [mode, setMode] = useState<VisualizerMode>('physics');
@@ -30,20 +29,6 @@ function App() {
     return acc;
   }, {} as Record<string, Note>);
 
-  const addRipple = useCallback((frequency: number, currentWaveform: OscillatorType) => {
-    const id = Date.now().toString() + Math.random();
-    const x = window.innerWidth / 2;
-    const y = window.innerHeight / 2;
-
-    const newRipple: Ripple = { id, frequency, x, y, waveform: currentWaveform };
-
-    setRipples(prev => [...prev, newRipple]);
-
-    setTimeout(() => {
-      setRipples(prev => prev.filter(r => r.id !== id));
-    }, 800);
-  }, []);
-
   const handleStart = useCallback(() => {
     if (hasStarted) return;
     console.log("Starting app...");
@@ -61,8 +46,7 @@ function App() {
       newSet.add(frequency);
       return newSet;
     });
-    addRipple(frequency, waveform);
-  }, [playTone, initAudio, addRipple, hasStarted, handleStart, waveform]);
+  }, [playTone, initAudio, hasStarted, handleStart]);
 
   const handleStop = useCallback((frequency: number) => {
     stopTone(frequency);
@@ -166,7 +150,6 @@ function App() {
 
       {/* Visualizer Background */}
       <Visualizer
-        ripples={ripples}
         activeNotes={activeNotes}
         pitchBend={pitchBend}
         mode={mode}
