@@ -58,7 +58,7 @@ export const BoubaKikiTutorial: React.FC<BoubaKikiTutorialProps> = ({ isOpen, on
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl sm:rounded-[2rem] border border-white/10 bg-gray-900/95 p-4 sm:p-6 shadow-2xl"
+            className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl sm:rounded-[2rem] border border-white/5 bg-gray-900/95 p-4 sm:p-6 shadow-2xl"
           >
             {/* Close Button */}
             <button
@@ -89,9 +89,9 @@ export const BoubaKikiTutorial: React.FC<BoubaKikiTutorialProps> = ({ isOpen, on
               {/* Bouba */}
               <motion.div
                 className={`relative p-3 sm:p-5 rounded-xl sm:rounded-2xl border transition-all cursor-pointer ${
-                  activeShape === 'bouba' 
-                    ? 'bg-purple-500/20 border-purple-500/50' 
-                    : 'bg-white/5 border-white/10 hover:bg-white/10'
+                  activeShape === 'bouba'
+                    ? 'bg-purple-500/20 border-purple-500/30'
+                    : 'bg-white/5 border-white/5 hover:bg-white/10'
                 }`}
                 onClick={() => setActiveShape('bouba')}
                 whileHover={{ scale: 1.02 }}
@@ -129,9 +129,9 @@ export const BoubaKikiTutorial: React.FC<BoubaKikiTutorialProps> = ({ isOpen, on
               {/* Kiki */}
               <motion.div
                 className={`relative p-3 sm:p-5 rounded-xl sm:rounded-2xl border transition-all cursor-pointer ${
-                  activeShape === 'kiki' 
-                    ? 'bg-orange-500/20 border-orange-500/50' 
-                    : 'bg-white/5 border-white/10 hover:bg-white/10'
+                  activeShape === 'kiki'
+                    ? 'bg-orange-500/20 border-orange-500/30'
+                    : 'bg-white/5 border-white/5 hover:bg-white/10'
                 }`}
                 onClick={() => setActiveShape('kiki')}
                 whileHover={{ scale: 1.02 }}
@@ -165,7 +165,7 @@ export const BoubaKikiTutorial: React.FC<BoubaKikiTutorialProps> = ({ isOpen, on
             </div>
 
             {/* Waveform Visualization */}
-            <div className="bg-black/40 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-white/5">
+            <div className="bg-black/40 rounded-lg sm:rounded-xl p-3 sm:p-4">
               <div className="flex items-center justify-between mb-2 sm:mb-3">
                 <span className="text-[10px] sm:text-xs text-white/40 font-mono uppercase tracking-widest">
                   Circular Waveform Mapping
@@ -209,7 +209,7 @@ export const BoubaKikiTutorial: React.FC<BoubaKikiTutorialProps> = ({ isOpen, on
                 </svg>
                 
                 {/* Center label */}
-                <div className="bg-gray-900/80 backdrop-blur px-2 sm:px-4 py-1 sm:py-2 rounded-full border border-white/10">
+                <div className="bg-gray-900/80 backdrop-blur px-2 sm:px-4 py-1 sm:py-2 rounded-full">
                   <span className="text-[9px] sm:text-xs text-white/50 font-mono">
                     Press [V] to toggle
                   </span>
@@ -218,7 +218,7 @@ export const BoubaKikiTutorial: React.FC<BoubaKikiTutorialProps> = ({ isOpen, on
             </div>
 
             {/* Footer */}
-            <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-white/5 text-center">
+            <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 text-center">
               <p className="text-[9px] sm:text-[10px] text-white/30 font-mono">
                 "The tendency to map pitch onto vertical space... is innate in our culture"
               </p>

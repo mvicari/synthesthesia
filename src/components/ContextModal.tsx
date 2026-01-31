@@ -42,7 +42,7 @@ export const ContextModal: React.FC<ContextModalProps> = ({
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative w-full max-w-xl overflow-hidden rounded-[2rem] bg-gray-900/90 p-8 shadow-2xl backdrop-blur-2xl border border-white/10"
+              className="relative w-full max-w-xl overflow-hidden rounded-[2rem] bg-gray-900/90 p-8 shadow-2xl backdrop-blur-2xl border border-white/5"
             >
               <button
                 onClick={onClose}
@@ -80,7 +80,7 @@ export const ContextModal: React.FC<ContextModalProps> = ({
                 </div>
 
                 {isPhysics && (
-                  <blockquote className="border-l-2 border-white/20 pl-4 italic text-sm text-gray-400">
+                  <blockquote className="italic text-sm text-gray-400 pl-4">
                     "This secret analogy between light and sound leads one to suspect that all things in nature have their hidden rapports, which perhaps some day will be discovered."
                     <footer className="mt-2 text-xs text-white/40 not-italic">
                       — Voltaire, <em>Éléments de la philosophie de Newton</em> (1738)
@@ -119,14 +119,14 @@ export const ContextModal: React.FC<ContextModalProps> = ({
                 )}
               </div>
 
-              <div className="mt-10 flex flex-wrap gap-4 border-t border-white/5 pt-8">
+              <div className="mt-10 flex flex-wrap gap-4 pt-8">
                 {isPhysics ? (
                   <>
                     <a
                       href="https://www.gutenberg.org/files/33504/33504-h/33504-h.htm"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-[10px] font-bold tracking-widest text-white transition-all hover:bg-white/10"
+                      className="flex items-center gap-2 rounded-full bg-white/5 px-5 py-2.5 text-[10px] font-bold tracking-widest text-white transition-all hover:bg-white/10"
                     >
                       NEWTON'S OPTICKS (1704)
                       <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-50"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
@@ -138,7 +138,7 @@ export const ContextModal: React.FC<ContextModalProps> = ({
                       href="https://www.gresham.ac.uk/sites/default/files/transcript/R_2026_01_12_1618_Mermikides_T_V3.pdf"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 rounded-full border border-pink-500/20 bg-pink-500/10 px-5 py-2.5 text-[10px] font-bold tracking-widest text-pink-200 transition-all hover:bg-pink-500/20"
+                      className="flex items-center gap-2 rounded-full bg-pink-500/10 px-5 py-2.5 text-[10px] font-bold tracking-widest text-pink-200 transition-all hover:bg-pink-500/20"
                     >
                       DOWNLOAD TRANSCRIPT (PDF)
                       <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-50"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
@@ -147,7 +147,7 @@ export const ContextModal: React.FC<ContextModalProps> = ({
                       href="https://www.gresham.ac.uk/watch-now/music-light-colour"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-[10px] font-bold tracking-widest text-white transition-all hover:bg-white/10"
+                      className="flex items-center gap-2 rounded-full bg-white/5 px-5 py-2.5 text-[10px] font-bold tracking-widest text-white transition-all hover:bg-white/10"
                     >
                       LECTURE: MUSIC & COLOUR
                       <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-50"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>

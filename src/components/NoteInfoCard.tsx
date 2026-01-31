@@ -80,9 +80,9 @@ export const NoteInfoCard: React.FC<NoteInfoCardProps> = ({
 
                             {/* Inner glow border for depth (static) */}
                             <div
-                                className="absolute inset-0 rounded-[2rem] border pointer-events-none transition-colors duration-300"
+                                className="absolute inset-0 rounded-xl md:rounded-[2rem] border pointer-events-none transition-colors duration-300"
                                 style={{
-                                    borderColor: blendColor ? blendColor + '20' : 'rgba(255,255,255,0.05)',
+                                    borderColor: blendColor ? blendColor + '15' : 'rgba(255,255,255,0.03)',
                                 }}
                             />
 

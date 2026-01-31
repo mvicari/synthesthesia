@@ -58,6 +58,30 @@ export const Visualizer: React.FC<VisualizerProps> = ({
     allActiveFreqs.push(...freqs);
   }
 
+  // Helper to convert any color format to RGBA with opacity
+  const withOpacity = (color: string, opacity: number): string => {
+    if (color.startsWith('hsl')) {
+      // Extract HSL values and convert to HSLA
+      const match = color.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
+      if (match) {
+        const h = match[1];
+        const s = match[2];
+        const l = match[3];
+        return `hsla(${h}, ${s}%, ${l}%, ${opacity})`;
+      }
+    } else if (color.startsWith('rgb')) {
+      // Extract RGB values and convert to RGBA
+      const match = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+      if (match) {
+        const r = match[1];
+        const g = match[2];
+        const b = match[3];
+        return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+      }
+    }
+    return color;
+  };
+
   // Calculate Color based on Mode (Theory)
   let blendColor = 'transparent';
   if (primaryFrequency > 0) {
@@ -181,11 +205,11 @@ export const Visualizer: React.FC<VisualizerProps> = ({
       {/* Background Ambience */}
       <motion.div
         style={{
-          background: `radial-gradient(circle at 50% 50%, ${blendColor} 0%, transparent 70%)`,
+          background: blendColor,
           opacity,
           scale,
         }}
-        className="absolute inset-0 blur-[120px] mix-blend-screen pointer-events-none"
+        className="absolute inset-0 blur-[150px] mix-blend-screen pointer-events-none"
       />
 
       {/* Sustained Active Note Orb - Kept as background glow */}
@@ -202,7 +226,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({
                 transition={{ duration: 0.6, ease: 'easeOut' }}
                 className="absolute w-64 h-64 rounded-full pointer-events-none"
                 style={{
-                  background: `radial-gradient(circle, ${blendColor}80 0%, transparent 70%)`,
+                  background: `radial-gradient(circle, ${withOpacity(blendColor, 0.5)} 0%, transparent 70%)`,
                 }}
               />
               {/* Main orb glow */}
@@ -218,8 +242,12 @@ export const Visualizer: React.FC<VisualizerProps> = ({
                 transition={{ duration: 0.3 }}
                 className="absolute w-96 h-96 mix-blend-screen rounded-full"
                 style={{
-                  backgroundColor: `${blendColor}66`,
-                  boxShadow: `0 0 180px ${blendColor}CC, 0 0 80px ${blendColor}88`,
+                  backgroundColor: withOpacity(blendColor, 0.4),
+                  boxShadow: (() => {
+                    const strongGlow = withOpacity(blendColor, 0.8);
+                    const weakGlow = withOpacity(blendColor, 0.5);
+                    return `0 0 180px ${strongGlow}, 0 0 80px ${weakGlow}`;
+                  })(),
                   scale: orbScale,
                   filter: orbFilter
                 }}
