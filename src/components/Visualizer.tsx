@@ -82,15 +82,18 @@ export const Visualizer: React.FC<VisualizerProps> = ({
     return color;
   };
 
-  // Helper to create a brighter waveform color for better contrast (especially in harmonic mode)
+  // Helper to create a bright waveform color for contrast (especially in harmonic mode)
+  // Physics mode naturally produces bright/white waveforms - we emulate this for harmonic mode
   const getWaveformColor = (color: string): string => {
     if (color.startsWith('hsl')) {
-      // For HSL colors, increase lightness and saturation for waveform visibility
+      // For HSL colors, push toward white by drastically reducing saturation and increasing lightness
       const match = color.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
       if (match) {
         const h = parseInt(match[1]);
-        const s = Math.min(100, parseInt(match[2]) + 20); // Boost saturation
-        const l = Math.min(85, parseInt(match[3]) + 25); // Brighten significantly
+        // Reduce saturation significantly to desaturate toward white
+        const s = Math.max(10, parseInt(match[2]) - 50);
+        // Push lightness very high for bright white-ish appearance
+        const l = Math.min(95, parseInt(match[3]) + 40);
         return `hsl(${h}, ${s}%, ${l}%)`;
       }
     }
