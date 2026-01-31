@@ -120,7 +120,11 @@ export const Wheels: React.FC<WheelsProps> = ({
   };
 
   return (
-    <div className="flex gap-1 md:gap-6 h-28 md:h-48 select-none bg-gray-900 p-1.5 md:p-4 rounded-lg md:rounded-xl shadow-2xl border border-gray-800 shrink-0">
+    <div
+      className="flex gap-1 md:gap-6 h-28 md:h-48 select-none bg-gray-900 p-1.5 md:p-4 rounded-lg md:rounded-xl shadow-2xl border border-gray-800 shrink-0"
+      style={{ WebkitTapHighlightColor: 'transparent', WebkitTouchCallout: 'none' }}
+      onContextMenu={(e) => e.preventDefault()}
+    >
       {/* PITCH BEND */}
       <div className="flex flex-col items-center gap-0.5 md:gap-2">
         <div
@@ -129,6 +133,7 @@ export const Wheels: React.FC<WheelsProps> = ({
           onDoubleClick={() => onPitchBend(0)}
           onTouchStart={handleTouchStart}
           className="relative w-6 md:w-12 h-full bg-gray-800 rounded-md md:rounded-lg cursor-ns-resize overflow-hidden border border-gray-700 shadow-inner group touch-none"
+          style={{ WebkitTapHighlightColor: 'transparent', WebkitTouchCallout: 'none' }}
         >
           {/* Center Line */}
           <div className="absolute top-1/2 left-0 w-full h-0.5 bg-gray-600/50 -translate-y-1/2" />

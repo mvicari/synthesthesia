@@ -70,10 +70,12 @@ export const Keyboard: React.FC<KeyboardProps> = ({ notes, activeNotes, onPlay, 
   return (
     <div
       className="flex justify-center items-end h-28 md:h-48 w-full md:w-auto select-none relative bg-gray-900 p-1 md:p-4 rounded-t-lg md:rounded-t-xl shadow-2xl touch-none"
+      style={{ WebkitTapHighlightColor: 'transparent', WebkitTouchCallout: 'none' }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchEnd}
+      onContextMenu={(e) => e.preventDefault()}
     >
       {notes.map((note) => {
         const isActive = activeNotes.has(note.frequency);
@@ -95,11 +97,11 @@ export const Keyboard: React.FC<KeyboardProps> = ({ notes, activeNotes, onPlay, 
             key={note.note + note.frequency}
             data-frequency={note.frequency}
             className={`${baseClass} ${isBlack ? blackClass : whiteClass}`}
-            style={
-              isBlack
-                ? { backgroundColor: isActive ? color : undefined }
-                : { backgroundColor: isActive ? color : undefined }
-            }
+            style={{
+              backgroundColor: isActive ? color : undefined,
+              WebkitTapHighlightColor: 'transparent',
+              WebkitTouchCallout: 'none',
+            }}
             onMouseDown={() => { isMouseDown.current = true; onPlay(note.frequency); }}
             onMouseEnter={() => { if (isMouseDown.current) onPlay(note.frequency); }}
             onMouseLeave={() => onStop(note.frequency)}

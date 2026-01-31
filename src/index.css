@@ -12,3 +12,19 @@ body {
   width: 100%;
   height: 100%;
 }
+
+/* Prevent text selection and callout on mobile touch interactions */
+@media (pointer: coarse) {
+  * {
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+}
+
+/* Always prevent selection on interactive controls */
+.select-none {
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
