@@ -166,30 +166,28 @@ export const ContextModal: React.FC<ContextModalProps> = ({
           />
 
           <div className="relative">
-            {borderPath && (
-              <svg 
-                className="absolute -inset-4 pointer-events-none"
-                style={{ width: 'calc(100% + 32px)', height: 'calc(100% + 32px)' }}
-                viewBox="0 0 640 480"
-                preserveAspectRatio="none"
-              >
-                <motion.path
-                  d={borderPath}
-                  fill="none"
-                  stroke={borderColor}
-                  strokeWidth={isSaw ? 3 : 2}
-                  strokeLinecap={isSaw ? "butt" : "round"}
-                  strokeLinejoin={isSaw ? "miter" : "round"}
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ pathLength: 1, opacity: 1 }}
-                  exit={{ pathLength: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  style={{
-                    filter: `drop-shadow(0 0 ${isSaw ? 15 : 10}px ${borderColor})`,
-                  }}
-                />
-              </svg>
-            )}
+            <svg 
+              className="absolute -inset-4 pointer-events-none"
+              style={{ width: 'calc(100% + 32px)', height: 'calc(100% + 32px)' }}
+              viewBox="0 0 640 480"
+              preserveAspectRatio="none"
+            >
+              <motion.path
+                d={borderPath || `M 20 20 L 620 20 L 620 460 L 20 460 Z`}
+                fill="none"
+                stroke={borderColor}
+                strokeWidth={isSaw ? 4 : 3}
+                strokeLinecap={isSaw ? "butt" : "round"}
+                strokeLinejoin={isSaw ? "miter" : "round"}
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 1 }}
+                exit={{ pathLength: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                style={{
+                  filter: `drop-shadow(0 0 ${isSaw ? 20 : 15}px ${borderColor})`,
+                }}
+              />
+            </svg>
 
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
