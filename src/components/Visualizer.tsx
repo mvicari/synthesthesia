@@ -181,35 +181,50 @@ export const Visualizer: React.FC<VisualizerProps> = ({
       {/* Background Ambience */}
       <motion.div
         style={{
-          background: blendColor,
+          background: `radial-gradient(circle at 50% 50%, ${blendColor} 0%, transparent 70%)`,
           opacity,
           scale,
         }}
-        className="absolute inset-0 blur-[150px] mix-blend-screen pointer-events-none"
+        className="absolute inset-0 blur-[120px] mix-blend-screen pointer-events-none"
       />
 
       {/* Sustained Active Note Orb - Kept as background glow */}
       <div className="absolute inset-0 flex items-center justify-center">
         <AnimatePresence>
           {hasActiveInput && (
-            <motion.div
-              key="main-orb-glow"
-              initial={{ scale: 0.5, opacity: 0, filter: 'blur(20px)' }}
-              animate={{
-                scale: 1,
-                opacity: 0.6, // Reduced opacity since it's now just a backing glow
-                filter: 'blur(60px)', // Softer glow
-              }}
-              exit={{ scale: 0, opacity: 0, filter: 'blur(10px)' }}
-              transition={{ duration: 0.3 }}
-              className="absolute w-96 h-96 mix-blend-screen rounded-full"
-              style={{
-                backgroundColor: `${blendColor}44`,
-                boxShadow: `0 0 150px ${blendColor}AA`,
-                scale: orbScale,
-                filter: orbFilter
-              }}
-            />
+            <>
+              {/* Burst splash effect - appears on note press */}
+              <motion.div
+                key={`splash-${Array.from(activeNotes).join('-')}`}
+                initial={{ scale: 0.3, opacity: 0.9 }}
+                animate={{ scale: 2.5, opacity: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+                className="absolute w-64 h-64 rounded-full pointer-events-none"
+                style={{
+                  background: `radial-gradient(circle, ${blendColor}80 0%, transparent 70%)`,
+                }}
+              />
+              {/* Main orb glow */}
+              <motion.div
+                key="main-orb-glow"
+                initial={{ scale: 0.5, opacity: 0, filter: 'blur(20px)' }}
+                animate={{
+                  scale: 1,
+                  opacity: 0.7,
+                  filter: 'blur(50px)',
+                }}
+                exit={{ scale: 0, opacity: 0, filter: 'blur(10px)' }}
+                transition={{ duration: 0.3 }}
+                className="absolute w-96 h-96 mix-blend-screen rounded-full"
+                style={{
+                  backgroundColor: `${blendColor}66`,
+                  boxShadow: `0 0 180px ${blendColor}CC, 0 0 80px ${blendColor}88`,
+                  scale: orbScale,
+                  filter: orbFilter
+                }}
+              />
+            </>
           )}
         </AnimatePresence>
 

@@ -99,7 +99,7 @@ export const getLightStats = (frequency: number) => {
   };
 };
 
-export const frequencyToRGB = (frequency: number): string => {
+export const frequencyToRGB = (frequency: number, enhance = true): string => {
   const targetFreq = scaleToVisible(frequency);
   const wavelength = (LIGHT_VELOCITY / targetFreq) * 1e9;
   const [r, g, b] = wavelengthToRgb(wavelength);
@@ -109,9 +109,51 @@ export const frequencyToRGB = (frequency: number): string => {
   const freqTHz = targetFreq / 1e12;
   const washOut = Math.min(1, Math.max(0, (freqTHz - 600) / 150));
 
-  const rFinal = Math.round(r + (255 - r) * washOut);
-  const gFinal = Math.round(g + (255 - g) * washOut);
-  const bFinal = Math.round(b + (255 - b) * washOut);
+  let rFinal = Math.round(r + (255 - r) * washOut);
+  let gFinal = Math.round(g + (255 - g) * washOut);
+  let bFinal = Math.round(b + (255 - b) * washOut);
+
+  // Enhance saturation to match harmonic mode vibrancy
+  if (enhance) {
+    // Convert to HSL, boost saturation, convert back
+    const max = Math.max(rFinal, gFinal, bFinal);
+    const min = Math.min(rFinal, gFinal, bFinal);
+    const l = (max + min) / 2 / 255;
+    const d = max - min;
+
+    if (d > 0) {
+      let h = 0;
+      const s = l > 0.5 ? d / (510 - max - min) : d / (max + min);
+
+      if (max === rFinal) {
+        h = ((gFinal - bFinal) / d + (gFinal < bFinal ? 6 : 0)) / 6;
+      } else if (max === gFinal) {
+        h = ((bFinal - rFinal) / d + 2) / 6;
+      } else {
+        h = ((rFinal - gFinal) / d + 4) / 6;
+      }
+
+      // Boost saturation by 40% but cap at 95%
+      const boostedS = Math.min(0.95, s * 1.4);
+
+      // Convert back to RGB
+      const hue2rgb = (p: number, q: number, t: number) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1/6) return p + (q - p) * 6 * t;
+        if (t < 1/2) return q;
+        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+      };
+
+      const q = l < 0.5 ? l * (1 + boostedS) : l + boostedS - l * boostedS;
+      const p = 2 * l - q;
+
+      rFinal = Math.round(hue2rgb(p, q, h + 1/3) * 255);
+      gFinal = Math.round(hue2rgb(p, q, h) * 255);
+      bFinal = Math.round(hue2rgb(p, q, h - 1/3) * 255);
+    }
+  }
 
   return `rgb(${rFinal}, ${gFinal}, ${bFinal})`;
 };

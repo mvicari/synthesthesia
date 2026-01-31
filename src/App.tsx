@@ -202,59 +202,59 @@ function App() {
       <div className="relative z-10 w-full h-full flex flex-col justify-between pointer-events-none">
 
         {/* Header */}
-        <header className="p-4 md:p-8 flex justify-between items-start">
-          <div>
-            <h1 className="text-xl md:text-4xl font-thin tracking-[0.2em] uppercase text-white/90 drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">
+        <header className="p-2 md:p-8 flex justify-between items-start gap-2">
+          <div className="min-w-0 flex-shrink">
+            <h1 className="text-lg md:text-4xl font-thin tracking-[0.1em] md:tracking-[0.2em] uppercase text-white/90 drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">
               Synthesthesia
             </h1>
-            <p className="text-xs md:text-sm text-white/40 tracking-wider font-light mt-1 ml-1">
+            <p className="text-[10px] md:text-sm text-white/40 tracking-wider font-light mt-0.5 md:mt-1 hidden sm:block">
               Audio-Visual Frequency Mapper
             </p>
           </div>
 
           {/* Mode Toggle Switch */}
-          <div className="pointer-events-auto flex items-start gap-2">
-            <div className="flex flex-col items-end gap-2">
-              {/* Waveform Toggle */}
+          <div className="pointer-events-auto flex items-start gap-1 md:gap-2 flex-shrink-0">
+            <div className="flex flex-col items-end gap-1 md:gap-2">
+              {/* Waveform Toggle - compact on mobile */}
               <button
                 onClick={() => {
                   const nextWave = waveform === 'sine' ? 'sawtooth' : 'sine';
                   setWaveformState(nextWave);
                   setWaveform(nextWave);
                 }}
-                className="px-3 py-1 rounded-full border border-white/10 bg-white/5 text-[10px] font-mono tracking-widest uppercase hover:bg-white/10 transition-all"
+                className="px-2 md:px-3 py-1 rounded-full border border-white/10 bg-white/5 text-[9px] md:text-[10px] font-mono tracking-wider md:tracking-widest uppercase hover:bg-white/10 transition-all"
               >
-                Timbre: <span className={waveform === 'sine' ? 'text-blue-300' : 'text-orange-400'}>{waveform}</span>
+                <span className="hidden sm:inline">Timbre: </span>
+                <span className={waveform === 'sine' ? 'text-blue-300' : 'text-orange-400'}>{waveform === 'sine' ? '~' : '⌇'}</span>
+                <span className={`hidden sm:inline ml-1 ${waveform === 'sine' ? 'text-blue-300' : 'text-orange-400'}`}>{waveform}</span>
               </button>
 
               <button
                 onClick={handleModeToggle}
                 className={`
-                  px-4 py-2 rounded-full border border-white/20 backdrop-blur-md 
-                  text-xs font-mono tracking-widest uppercase transition-all duration-300
+                  px-2 md:px-4 py-1.5 md:py-2 rounded-full border border-white/20 backdrop-blur-md
+                  text-[10px] md:text-xs font-mono tracking-wider md:tracking-widest uppercase transition-all duration-300
                   hover:bg-white/10 active:scale-95
                   ${mode === 'harmonic' ? 'shadow-[0_0_20px_rgba(236,72,153,0.3)] bg-pink-500/10 border-pink-500/30' : 'shadow-[0_0_20px_rgba(255,255,255,0.1)] bg-white/5'}
                 `}
               >
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-1 md:gap-2">
                   {mode === 'physics' ? (
                     <>
-                      <span className="text-base md:text-lg">🎹</span>
-                      <span className="hidden sm:inline">NEWTON (1704 Physics)</span>
-                      <span className="text-blue-300/40">•</span>
-                      <span className="opacity-70">Octave Doubling</span>
+                      <span className="text-sm md:text-lg">🎹</span>
+                      <span className="hidden md:inline">NEWTON</span>
+                      <span className="md:hidden">Physics</span>
                     </>
                   ) : (
                     <>
-                      <span className="text-base md:text-lg">🎨</span>
-                      <span className="hidden sm:inline">MERMIKIDES (2026 Perceptual)</span>
-                      <span className="text-pink-300/40">•</span>
-                      <span className="opacity-70">Circle of Fifths</span>
+                      <span className="text-sm md:text-lg">🎨</span>
+                      <span className="hidden md:inline">MERMIKIDES</span>
+                      <span className="md:hidden">Harmonic</span>
                     </>
                   )}
                 </span>
               </button>
-              <p className="text-[8px] md:text-[10px] text-white/30 font-mono mt-1 text-center">
+              <p className="text-[7px] md:text-[10px] text-white/30 font-mono text-center hidden sm:block">
                 Press [M] to toggle
               </p>
 
@@ -262,46 +262,46 @@ function App() {
               {mode === 'physics' && (
                 <button
                   onClick={() => setPhysicsSubMode(prev => prev === 'continuous' ? '7band' : 'continuous')}
-                  className={`mt-2 px-3 py-1 rounded-full border text-[9px] font-mono tracking-wider transition-all ${physicsSubMode === '7band'
+                  className={`px-2 md:px-3 py-0.5 md:py-1 rounded-full border text-[8px] md:text-[9px] font-mono tracking-wider transition-all ${physicsSubMode === '7band'
                     ? 'border-yellow-500/30 bg-yellow-500/10 text-yellow-300'
                     : 'border-white/10 bg-white/5 text-white/50 hover:bg-white/10'
                     }`}
                 >
-                  {physicsSubMode === '7band' ? '7-BAND (Newton)' : 'CONTINUOUS'}
-                  <span className="ml-1 text-white/30">[N]</span>
+                  {physicsSubMode === '7band' ? '7-BAND' : 'SPECTRUM'}
+                  <span className="ml-1 text-white/30 hidden sm:inline">[N]</span>
                 </button>
               )}
             </div>
 
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1 md:gap-2">
               <button
                 onClick={() => setIsBoubaKikiOpen(true)}
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/40 transition-all hover:bg-white/10 hover:text-white"
+                className="flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/40 transition-all hover:bg-white/10 hover:text-white"
                 title="Bouba-Kiki Effect"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h.01" /><path d="M12 12h.01" /><path d="M16 12h.01" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h.01" /><path d="M12 12h.01" /><path d="M16 12h.01" /></svg>
               </button>
 
               <button
                 onClick={() => setIsInfoOpen(true)}
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/40 transition-all hover:bg-white/10 hover:text-white"
+                className="flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/40 transition-all hover:bg-white/10 hover:text-white"
                 title="Theory & Context"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
               </button>
             </div>
           </div>
         </header>
 
-        <div className={`z-50 w-full max-w-5xl mx-auto mb-4 md:mb-8 px-2 md:px-4 overflow-hidden pointer-events-none transition-all duration-500 ease-in-out`}>
-          <div className="mb-2 md:mb-4 text-center">
-            <p className="text-[10px] md:text-xs text-gray-400 mt-1 md:mt-2 font-mono opacity-50">
-              PRESS KEYS [A-Z], TAP, OR SCROLL PITCH
+        <div className={`z-50 w-full max-w-5xl mx-auto mb-2 md:mb-8 px-1 md:px-4 overflow-hidden pointer-events-none transition-all duration-500 ease-in-out`}>
+          <div className="mb-1 md:mb-4 text-center">
+            <p className="text-[8px] md:text-xs text-gray-400 mt-1 font-mono opacity-50">
+              <span className="hidden sm:inline">PRESS KEYS [A-Z], </span>TAP<span className="hidden sm:inline">, OR SCROLL PITCH</span>
             </p>
           </div>
 
           {/* Controls Container - Show in BOTH modes now */}
-          <div className="flex gap-1 md:gap-4 items-end justify-center w-full max-w-full overflow-hidden pointer-events-auto">
+          <div className="flex gap-0.5 md:gap-4 items-end justify-center w-full max-w-full overflow-hidden pointer-events-auto">
             <Wheels
               onPitchBend={setPitchBend}
               pitchBend={pitchBend}

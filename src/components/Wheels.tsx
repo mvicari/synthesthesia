@@ -120,15 +120,15 @@ export const Wheels: React.FC<WheelsProps> = ({
   };
 
   return (
-    <div className="flex gap-2 md:gap-6 h-32 md:h-48 select-none bg-gray-900 p-2 md:p-4 rounded-xl shadow-2xl border border-gray-800 shrink-0">
+    <div className="flex gap-1 md:gap-6 h-28 md:h-48 select-none bg-gray-900 p-1.5 md:p-4 rounded-lg md:rounded-xl shadow-2xl border border-gray-800 shrink-0">
       {/* PITCH BEND */}
-      <div className="flex flex-col items-center gap-1 md:gap-2">
+      <div className="flex flex-col items-center gap-0.5 md:gap-2">
         <div
           ref={pitchRef}
           onMouseDown={handleMouseDown}
           onDoubleClick={() => onPitchBend(0)}
           onTouchStart={handleTouchStart}
-          className="relative w-8 md:w-12 h-full bg-gray-800 rounded-lg cursor-ns-resize overflow-hidden border border-gray-700 shadow-inner group touch-none"
+          className="relative w-6 md:w-12 h-full bg-gray-800 rounded-md md:rounded-lg cursor-ns-resize overflow-hidden border border-gray-700 shadow-inner group touch-none"
         >
           {/* Center Line */}
           <div className="absolute top-1/2 left-0 w-full h-0.5 bg-gray-600/50 -translate-y-1/2" />
@@ -146,7 +146,7 @@ export const Wheels: React.FC<WheelsProps> = ({
             <div className="w-full h-px bg-gray-500 mt-1 opacity-50" />
           </motion.div>
         </div>
-        <span className="text-[10px] text-gray-500 font-mono tracking-widest">PITCH</span>
+        <span className="text-[8px] md:text-[10px] text-gray-500 font-mono tracking-wider md:tracking-widest">PITCH</span>
       </div>
     </div>
   );
