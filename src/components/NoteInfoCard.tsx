@@ -48,7 +48,7 @@ export const NoteInfoCard: React.FC<NoteInfoCardProps> = ({
     }
 
     return (
-        <div className="absolute inset-x-0 top-[15%] flex flex-col items-center z-50 pointer-events-none">
+        <div className="absolute inset-x-0 top-[8%] flex flex-col items-center z-50 pointer-events-none">
             <AnimatePresence>
                 {hasActiveInput && primaryFrequency > 0 && (
                     // ...

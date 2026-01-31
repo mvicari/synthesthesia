@@ -38,6 +38,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({
   const orbFilter = useTransform(amplitude, [0, 1], [`blur(45px) brightness(1)`, `blur(45px) brightness(1.5)`]);
 
   const dataArrayRef = useRef<Uint8Array | null>(null);
+  const smoothedAmplitude = useRef(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isSaw = waveform === 'sawtooth' || waveform === 'square';
 
@@ -98,82 +99,58 @@ export const Visualizer: React.FC<VisualizerProps> = ({
           sum += val * val;
         }
         const rms = Math.sqrt(sum / dataArray.length);
-        amplitude.set(rms);
+
+        // Asymmetric Smoothing (Fast Attack, Slow Decay)
+        const targetAmp = rms;
+        const isAttack = targetAmp > smoothedAmplitude.current;
+        // Fast attack (0.3) for responsiveness, slow decay (0.05) for smoothness
+        const smoothingFactor = isAttack ? 0.3 : 0.05;
+        smoothedAmplitude.current = smoothedAmplitude.current * (1 - smoothingFactor) + targetAmp * smoothingFactor;
+        amplitude.set(smoothedAmplitude.current);
 
         // Draw waveform visualization
         if (ctx && canvas && config.hasActiveInput) {
           const dpr = window.devicePixelRatio || 1;
-          const size = 400;
+          const width = window.innerWidth;
+          const height = 400;
 
-          if (canvas.width !== size * dpr) {
-            canvas.width = size * dpr;
-            canvas.height = size * dpr;
-            canvas.style.width = `${size}px`;
-            canvas.style.height = `${size}px`;
+          if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = `${width}px`;
+            canvas.style.height = `${height}px`;
             ctx.scale(dpr, dpr);
           }
 
-          ctx.clearRect(0, 0, size, size);
+          ctx.clearRect(0, 0, width, height);
           ctx.beginPath();
           ctx.strokeStyle = config.blendColor;
           ctx.lineWidth = config.isSaw ? 2 : 3;
-          ctx.lineCap = config.isSaw ? 'butt' : 'round';
-          ctx.lineJoin = config.isSaw ? 'miter' : 'round';
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
           ctx.shadowBlur = 20;
           ctx.shadowColor = config.blendColor;
 
-          const cx = size / 2;
-          const cy = size / 2;
+          const cy = height / 2;
           const bufferLength = dataArray.length;
-          const baseRadius = 80 + (rms * 60);
+          // Scale amplitude for visibility
+          const ampScale = 150 + (smoothedAmplitude.current * 100);
 
-          if (!config.isSaw) {
-            // SINE: Smooth circular waveform (Bouba)
-            for (let i = 0; i <= bufferLength; i++) {
-              const idx = i % bufferLength;
-              const angle = (i / bufferLength) * Math.PI * 2;
-              const v = (dataArray[idx] - 128) / 128;
-              const r = baseRadius + (v * 30);
-              const x = cx + Math.cos(angle) * r;
-              const y = cy + Math.sin(angle) * r;
-              if (i === 0) ctx.moveTo(x, y);
-              else ctx.lineTo(x, y);
-            }
-          } else {
-            // Sawtooth Loop
-            const time = Date.now() / 1000;
-            const energy = Math.pow(rms, 0.7);
-            const baseTeeth = config.waveform === 'square' ? 4 : 6;
-            const dynamicTeeth = baseTeeth + Math.floor(energy * 24);
-            const teeth = dynamicTeeth;
-            const toothDepth = 20 + (energy * 60);
-            const rotationSpeed = 0.5 + (energy * 2);
-            const rotationOffset = time * rotationSpeed;
-            const secondaryMod = Math.sin(time * 3) * 0.3 * energy;
+          for (let i = 0; i < bufferLength; i++) {
+            const x = (i / bufferLength) * width;
 
-            for (let i = 0; i <= bufferLength; i++) {
-              const idx = i % bufferLength;
-              const angle = (i / bufferLength) * Math.PI * 2 + rotationOffset;
-              const v = (dataArray[idx] - 128) / 128;
-              const sawPhase = (angle * teeth) % (Math.PI * 2);
-              let sawValue;
-              const dutyCycle = config.waveform === 'square'
-                ? 0.3 + (energy * 0.4) + (secondaryMod * 0.2)
-                : 0.05 + (energy * 0.35) + (secondaryMod * 0.15);
-              if (sawPhase < Math.PI * 2 * dutyCycle) {
-                sawValue = Math.pow(sawPhase / (Math.PI * 2 * dutyCycle), 0.7) * 2 - 1;
-              } else {
-                sawValue = (Math.pow((Math.PI * 2 - sawPhase) / (Math.PI * 2 * (1 - dutyCycle)), 0.7)) * 2 - 1;
-              }
-              const tertiaryMod = Math.sin(angle * teeth * 3 + time * 5) * 5 * energy;
-              const r = baseRadius + (v * 25) + (sawValue * toothDepth) + tertiaryMod;
-              const x = cx + Math.cos(angle) * r;
-              const y = cy + Math.sin(angle) * r;
-              if (i === 0) ctx.moveTo(x, y);
-              else ctx.lineTo(x, y);
-            }
+            // Apply Hann Window to taper edges (0 at start/end, 1 in middle)
+            // w(n) = 0.5 * (1 - cos(2*pi*n/(N-1)))
+            const windowVal = 0.5 * (1 - Math.cos((2 * Math.PI * i) / (bufferLength - 1)));
+
+            const rawVal = (dataArray[i] - 128) / 128;
+            const val = rawVal * windowVal;
+
+            const y = cy + (val * ampScale);
+
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
           }
-          ctx.closePath();
           ctx.stroke();
         } else if (ctx && canvas) {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -204,7 +181,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({
         className="absolute inset-0 blur-[150px] mix-blend-screen pointer-events-none"
       />
 
-      {/* Sustained Active Note Orb */}
+      {/* Sustained Active Note Orb - Kept as background glow */}
       <div className="absolute inset-0 flex items-center justify-center">
         <AnimatePresence>
           {hasActiveInput && (
@@ -212,11 +189,9 @@ export const Visualizer: React.FC<VisualizerProps> = ({
               key="main-orb-glow"
               initial={{ scale: 0.5, opacity: 0, filter: 'blur(20px)' }}
               animate={{
-                scale: 1, // We map the rest via styles, or we could map amplitude here if we want React reactivity, but trying to avoid it.
-                // Actually, framer-motion AnimatePresence requires `animate` to work for entry/exit.
-                // Let's use simple entry/exit and let style/canvas do the heavy lifting.
-                opacity: 0.8,
-                filter: 'blur(45px)',
+                scale: 1,
+                opacity: 0.6, // Reduced opacity since it's now just a backing glow
+                filter: 'blur(60px)', // Softer glow
               }}
               exit={{ scale: 0, opacity: 0, filter: 'blur(10px)' }}
               transition={{ duration: 0.3 }}
@@ -230,16 +205,16 @@ export const Visualizer: React.FC<VisualizerProps> = ({
             />
           )}
         </AnimatePresence>
+      </div>
 
-        {/* Waveform Visualization Overlay */}
+      {/* Waveform Visualization Overlay - Full Width */}
+      <div className="absolute inset-0 flex items-center justify-center z-10">
         <canvas
           ref={canvasRef}
-          className="absolute pointer-events-none"
+          className="w-full h-[400px] pointer-events-none"
           style={{
-            width: '400px',
-            height: '400px',
-            filter: `blur(${isSaw ? 0.5 : 1}px) drop-shadow(0 0 10px ${blendColor})`,
-            opacity: hasActiveInput ? 0.8 : 0,
+            filter: `drop-shadow(0 0 15px ${blendColor})`,
+            opacity: hasActiveInput ? 0.9 : 0,
             transition: 'opacity 0.3s ease',
           }}
         />

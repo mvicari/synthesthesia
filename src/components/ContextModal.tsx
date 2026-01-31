@@ -10,9 +10,9 @@ interface ContextModalProps {
   activeNotes?: Set<number>;
 }
 
-export const ContextModal: React.FC<ContextModalProps> = ({ 
-  isOpen, 
-  onClose, 
+export const ContextModal: React.FC<ContextModalProps> = ({
+  isOpen,
+  onClose,
   mode,
   analyser,
   waveform = 'sine',
@@ -60,14 +60,14 @@ export const ContextModal: React.FC<ContextModalProps> = ({
         const height = 400;
         const padding = 20;
         const segments = 64;
-        
+
         let path = '';
-        
+
         for (let i = 0; i <= segments; i++) {
           const x = (i / segments) * width;
-          const dataIdx = Math.floor((i / segments) * dataArray.length);
+          const dataIdx = Math.min(dataArray.length - 1, Math.floor((i / segments) * dataArray.length));
           const v = (dataArray[dataIdx] - 128) / 128;
-          
+
           if (isSaw) {
             const teeth = 8 + Math.floor(rms * 16);
             const phase = (i / segments) * teeth * Math.PI * 2;
@@ -80,12 +80,12 @@ export const ContextModal: React.FC<ContextModalProps> = ({
             path += i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`;
           }
         }
-        
+
         for (let i = 0; i <= segments; i++) {
           const y = padding + (i / segments) * height;
-          const dataIdx = Math.floor((i / segments) * dataArray.length);
+          const dataIdx = Math.min(dataArray.length - 1, Math.floor((i / segments) * dataArray.length));
           const v = (dataArray[dataIdx] - 128) / 128;
-          
+
           if (isSaw) {
             const teeth = 6 + Math.floor(rms * 12);
             const phase = (i / segments) * teeth * Math.PI * 2;
@@ -98,12 +98,12 @@ export const ContextModal: React.FC<ContextModalProps> = ({
             path += ` L ${x} ${y}`;
           }
         }
-        
+
         for (let i = segments; i >= 0; i--) {
           const x = (i / segments) * width;
-          const dataIdx = Math.floor((i / segments) * dataArray.length);
+          const dataIdx = Math.min(dataArray.length - 1, Math.floor((i / segments) * dataArray.length));
           const v = (dataArray[dataIdx] - 128) / 128;
-          
+
           if (isSaw) {
             const teeth = 8 + Math.floor(rms * 16);
             const phase = (i / segments) * teeth * Math.PI * 2;
@@ -116,12 +116,12 @@ export const ContextModal: React.FC<ContextModalProps> = ({
             path += ` L ${x} ${y}`;
           }
         }
-        
+
         for (let i = segments; i >= 0; i--) {
           const y = padding + (i / segments) * height;
-          const dataIdx = Math.floor((i / segments) * dataArray.length);
+          const dataIdx = Math.min(dataArray.length - 1, Math.floor((i / segments) * dataArray.length));
           const v = (dataArray[dataIdx] - 128) / 128;
-          
+
           if (isSaw) {
             const teeth = 6 + Math.floor(rms * 12);
             const phase = (i / segments) * teeth * Math.PI * 2;
@@ -134,18 +134,18 @@ export const ContextModal: React.FC<ContextModalProps> = ({
             path += ` L ${x} ${y}`;
           }
         }
-        
+
         path += ' Z';
         setBorderPath(path);
 
         if (activeNotes.size > 0) {
-          const hue = isPhysics ? 
-            (Array.from(activeNotes)[0] / 2000) * 360 : 
+          const hue = isPhysics ?
+            (Array.from(activeNotes)[0] / 2000) * 360 :
             ((Array.from(activeNotes)[0] % 12) / 12) * 360;
           setBorderColor(`hsla(${hue}, 80%, 60%, ${0.3 + rms * 0.5})`);
         }
       }
-      
+
       animationId = requestAnimationFrame(update);
     };
 
@@ -166,7 +166,7 @@ export const ContextModal: React.FC<ContextModalProps> = ({
           />
 
           <div className="relative">
-            <svg 
+            <svg
               className="absolute -inset-4 pointer-events-none"
               style={{ width: 'calc(100% + 32px)', height: 'calc(100% + 32px)' }}
               viewBox="0 0 640 480"
