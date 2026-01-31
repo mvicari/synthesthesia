@@ -296,6 +296,9 @@ function App() {
         isOpen={isInfoOpen}
         onClose={() => setIsInfoOpen(false)}
         mode={mode}
+        analyser={analyser.current}
+        waveform={waveform}
+        activeNotes={activeNotes}
       />
 
       <BoubaKikiTutorial
