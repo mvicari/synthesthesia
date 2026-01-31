@@ -153,7 +153,6 @@ function App() {
         activeNotes={activeNotes}
         pitchBend={pitchBend}
         mode={mode}
-        waveform={waveform}
         analyser={analyser.current}
       />
 
@@ -248,7 +247,7 @@ function App() {
               className="mt-1 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/40 transition-all hover:bg-white/10 hover:text-white mr-2"
               title="Bouba-Kiki Effect"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h.01"/><path d="M12 12h.01"/><path d="M16 12h.01"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h.01" /><path d="M12 12h.01" /><path d="M16 12h.01" /></svg>
             </button>
 
             <button

@@ -17,7 +17,6 @@ interface VisualizerProps {
   /** Current visualization mode: physics (Newton) or harmonic (Mermikides) */
   mode?: VisualizerMode;
   analyser?: AnalyserNode | null;
-  waveform?: OscillatorType;
 }
 
 export const Visualizer: React.FC<VisualizerProps> = ({
@@ -25,7 +24,6 @@ export const Visualizer: React.FC<VisualizerProps> = ({
   pitchBend = 0,
   mode = 'physics',
   analyser,
-  waveform = 'sine',
 }) => {
   // Helper to calculate bent frequency
   const getBentFreq = (baseFreq: number) => baseFreq * Math.pow(2, pitchBend / 12);

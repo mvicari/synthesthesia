@@ -295,6 +295,7 @@ export const NoteInfoCard: React.FC<NoteInfoCardProps> = ({
                 {hasActiveInput && primaryFrequency > 0 && (
                     <motion.div
                         key="info-panel"
+                        ref={containerRef}
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.8 }}
@@ -315,7 +316,7 @@ export const NoteInfoCard: React.FC<NoteInfoCardProps> = ({
                         />
 
                         {/* Content Container - needed for measuring size */}
-                        <div ref={containerRef} className="p-8 flex flex-col items-center justify-center">
+                        <div className="p-8 flex flex-col items-center justify-center">
 
                             {/* Inner glow border for depth (static) */}
                             <div
@@ -431,6 +432,6 @@ export const NoteInfoCard: React.FC<NoteInfoCardProps> = ({
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+        </div >
     );
 };
