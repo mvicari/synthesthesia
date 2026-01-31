@@ -290,6 +290,8 @@ function App() {
         activeNotes={activeNotes}
         pitchBend={pitchBend}
         mode={mode}
+        analyser={analyser.current}
+        waveform={waveform}
       />
 
       <ContextModal
