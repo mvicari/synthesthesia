@@ -154,6 +154,7 @@ function App() {
         pitchBend={pitchBend}
         mode={mode}
         analyser={analyser.current}
+        waveform={waveform}
       />
 
       {/* Start Overlay */}

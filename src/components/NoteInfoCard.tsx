@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { frequencyToHSL, getMixColor, getLightStats, getHarmonicColor, getHarmonicPitchInfo, getHarmonicMixColor } from '../utils/colors';
 import { NOTES } from '../utils/notes';
@@ -16,8 +16,6 @@ export const NoteInfoCard: React.FC<NoteInfoCardProps> = ({
     activeNotes,
     pitchBend = 0,
     mode = 'physics',
-    analyser,
-    waveform = 'sine',
 }) => {
     // Helper to calculate bent frequency
     const getBentFreq = (baseFreq: number) => baseFreq * Math.pow(2, pitchBend / 12);
@@ -41,261 +39,21 @@ export const NoteInfoCard: React.FC<NoteInfoCardProps> = ({
         if (mode === 'harmonic') {
             blendColor = allActiveFreqs.length > 1 ? getHarmonicMixColor(allActiveFreqs) : getHarmonicColor(primaryFrequency);
         } else {
-            blendColor = allActiveFreqs.length > 1 ? getMixColor(allActiveFreqs) : frequencyToHSL(primaryFrequency);
+            if (allActiveFreqs.length > 1) {
+                blendColor = getMixColor(allActiveFreqs);
+            } else {
+                blendColor = frequencyToHSL(primaryFrequency);
+            }
         }
     }
-
-    // Canvas & Animation Refs
-    const containerRef = useRef<HTMLDivElement>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const dataArrayRef = useRef<Uint8Array | null>(null);
-    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-    const isSaw = waveform === 'sawtooth' || waveform === 'square';
-
-    // Optimize Loop: Store render config in ref to avoid restarting loop
-    const renderConfig = useRef({ blendColor, isSaw, waveform });
-    useEffect(() => {
-        renderConfig.current = { blendColor, isSaw, waveform };
-    }, [blendColor, isSaw, waveform]);
-
-    // Resize Observer to handle dynamic content size
-    useEffect(() => {
-        if (!containerRef.current) return;
-        const observer = new ResizeObserver((entries) => {
-            for (const entry of entries) {
-                setDimensions({
-                    width: entry.contentRect.width,
-                    height: entry.contentRect.height
-                });
-            }
-        });
-        observer.observe(containerRef.current);
-        return () => observer.disconnect();
-    }, [hasActiveInput]);
-
-    // Render Loop
-    useEffect(() => {
-        if (!analyser || !hasActiveInput) return;
-
-        if (!dataArrayRef.current || dataArrayRef.current.length !== analyser.frequencyBinCount) {
-            dataArrayRef.current = new Uint8Array(analyser.frequencyBinCount);
-        }
-
-        let animationId: number;
-
-        const update = () => {
-            const canvas = canvasRef.current;
-            const ctx = canvas?.getContext('2d');
-            const dataArray = dataArrayRef.current;
-            const { blendColor, isSaw, waveform } = renderConfig.current;
-
-            if (canvas && ctx && dataArray && dimensions.width > 0) {
-                analyser.getByteTimeDomainData(dataArray as any);
-
-                // Calculate RMS
-                let sum = 0;
-                for (let i = 0; i < dataArray.length; i++) {
-                    const val = (dataArray[i] - 128) / 128;
-                    sum += val * val;
-                }
-                const rms = Math.sqrt(sum / dataArray.length);
-
-                // Setup Canvas
-                const padding = 60; // Extra space for waveform excursion
-                const dpr = window.devicePixelRatio || 1;
-                const canvasWidth = dimensions.width + (padding * 2);
-                const canvasHeight = dimensions.height + (padding * 2);
-
-                // Only resize if necessary (to avoid clearing indiscriminately if size is stable)
-                if (canvas.width !== canvasWidth * dpr || canvas.height !== canvasHeight * dpr) {
-                    canvas.width = canvasWidth * dpr;
-                    canvas.height = canvasHeight * dpr;
-                    canvas.style.width = `${canvasWidth}px`;
-                    canvas.style.height = `${canvasHeight}px`;
-                    ctx.scale(dpr, dpr);
-                } else {
-                    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-                }
-
-                ctx.save();
-                ctx.translate(padding, padding); // Move origin to top-left of the actual card box
-
-                ctx.strokeStyle = blendColor;
-                ctx.lineWidth = isSaw ? 2 : 3;
-                ctx.lineCap = isSaw ? 'butt' : 'round';
-                ctx.lineJoin = 'round';
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = blendColor;
-
-                // Draw path
-                ctx.beginPath();
-
-                const w = dimensions.width;
-                const h = dimensions.height;
-                const r = 32; // border-radius: 2rem = 32px
-
-                // Perimeter Geometry
-                // We map t (0..1) to the total perimeter.
-                // Segments: Top(w-2r), TR_Corner(0.5pi*r), Right(h-2r), BR_Corner, Bottom, BL_Corner, Left, TL_Corner.
-                const straightX = Math.max(0, w - 2 * r);
-                const straightY = Math.max(0, h - 2 * r);
-                const cornerLen = 0.5 * Math.PI * r;
-                const perimeter = (2 * straightX) + (2 * straightY) + (4 * cornerLen);
-
-                const bufferLength = dataArray.length;
-                const time = Date.now() / 1000;
-
-                // Sawtooth Parameters
-                const energy = Math.pow(rms, 0.7);
-                const baseTeeth = waveform === 'square' ? 4 : 6;
-                const dynamicTeeth = baseTeeth + Math.floor(energy * 24);
-                const teeth = dynamicTeeth;
-                const toothDepth = 20 + (energy * 60);
-                const rotationSpeed = 0.5 + (energy * 2);
-                const rotationOffset = time * rotationSpeed;
-                const secondaryMod = Math.sin(time * 3) * 0.3 * energy;
-
-                for (let i = 0; i <= bufferLength; i++) {
-                    const t = i / bufferLength;
-                    const d = t * perimeter;
-                    const angle = t * Math.PI * 2 + rotationOffset; // Map t to 0-2PI for saw logic
-
-                    // Determine position and normal on rounded rect
-                    let x, y, nx, ny;
-
-                    // We start at Top-Left, just after the corner (Top edge start) to match standard rect definition order?
-                    // Let's start Top-Left straight section.
-                    // Sequence: Top -> TR -> Right -> BR -> Bottom -> BL -> Left -> TL
-
-                    let currD = 0;
-
-                    // Top Edge
-                    if (d < currD + straightX) {
-                        const localD = d - currD;
-                        x = r + localD;
-                        y = 0;
-                        nx = 0; ny = -1;
-                    } else if ((currD += straightX) && d < currD + cornerLen) {
-                        // TR Corner
-                        const localD = d - currD;
-                        const theta = (localD / cornerLen) * (Math.PI / 2); // 0 to 90 deg
-                        // Center of corner arc is (w-r, r)
-                        // Angle 0 is straight up (-90deg in standard math? No, local coords relative to center)
-                        // At start of TR corner (top edge), normal is (0, -1). At end (right edge), normal is (1, 0).
-                        // Standard circle: 0 is right, -PI/2 is up.
-                        // We traverse -PI/2 to 0.
-                        const arcAngle = -Math.PI / 2 + theta;
-                        x = (w - r) + Math.cos(arcAngle) * r;
-                        y = r + Math.sin(arcAngle) * r;
-                        nx = Math.cos(arcAngle);
-                        ny = Math.sin(arcAngle);
-                    } else if ((currD += cornerLen) && d < currD + straightY) {
-                        // Right Edge
-                        const localD = d - currD;
-                        x = w;
-                        y = r + localD;
-                        nx = 1; ny = 0;
-                    } else if ((currD += straightY) && d < currD + cornerLen) {
-                        // BR Corner
-                        const localD = d - currD;
-                        const theta = (localD / cornerLen) * (Math.PI / 2);
-                        // Traverse 0 to PI/2
-                        const arcAngle = theta;
-                        x = (w - r) + Math.cos(arcAngle) * r;
-                        y = (h - r) + Math.sin(arcAngle) * r;
-                        nx = Math.cos(arcAngle);
-                        ny = Math.sin(arcAngle);
-                    } else if ((currD += cornerLen) && d < currD + straightX) {
-                        // Bottom Edge
-                        // Going Right to Left
-                        const localD = d - currD;
-                        x = (w - r) - localD;
-                        y = h;
-                        nx = 0; ny = 1;
-                    } else if ((currD += straightX) && d < currD + cornerLen) {
-                        // BL Corner
-                        // Traverse PI/2 to PI
-                        const localD = d - currD;
-                        const theta = (localD / cornerLen) * (Math.PI / 2);
-                        const arcAngle = Math.PI / 2 + theta;
-                        x = r + Math.cos(arcAngle) * r;
-                        y = (h - r) + Math.sin(arcAngle) * r;
-                        nx = Math.cos(arcAngle);
-                        ny = Math.sin(arcAngle);
-                    } else if ((currD += cornerLen) && d < currD + straightY) {
-                        // Left Edge
-                        // Going Bottom to Top
-                        const localD = d - currD;
-                        x = 0;
-                        y = (h - r) - localD;
-                        nx = -1; ny = 0;
-                    } else {
-                        // TL Corner (remaining part)
-                        // Traverse PI to 3PI/2 (or -PI/2)
-                        const localD = d - (currD + straightY); // Note: currD was updated in if
-                        const theta = (localD / cornerLen) * (Math.PI / 2);
-                        const arcAngle = Math.PI + theta;
-                        x = r + Math.cos(arcAngle) * r;
-                        y = r + Math.sin(arcAngle) * r;
-                        nx = Math.cos(arcAngle);
-                        ny = Math.sin(arcAngle);
-                    }
-
-                    // Calculate Displacement using Audio Data
-                    const idx = i % bufferLength;
-                    const v = (dataArray[idx] - 128) / 128;
-
-                    let displacement = 0;
-
-                    if (!isSaw) {
-                        // Sine Mode (Bouba) - smooth
-                        displacement = v * 30 * (1 + rms * 2);
-                    } else {
-                        // Sawtooth Mode (Kiki) - spiky
-                        const sawPhase = (angle * teeth) % (Math.PI * 2);
-                        let sawValue;
-                        const dutyCycle = waveform === 'square'
-                            ? 0.3 + (energy * 0.4) + (secondaryMod * 0.2)
-                            : 0.05 + (energy * 0.35) + (secondaryMod * 0.15);
-
-                        if (sawPhase < Math.PI * 2 * dutyCycle) {
-                            sawValue = Math.pow(sawPhase / (Math.PI * 2 * dutyCycle), 0.7) * 2 - 1;
-                        } else {
-                            sawValue = (Math.pow((Math.PI * 2 - sawPhase) / (Math.PI * 2 * (1 - dutyCycle)), 0.7)) * 2 - 1;
-                        }
-
-                        const tertiaryMod = Math.sin(angle * teeth * 3 + time * 5) * 5 * energy;
-                        displacement = (v * 25) + (sawValue * toothDepth) + tertiaryMod;
-                    }
-
-                    // Apply displacement
-                    // For corners, we push outward radially. For sides, we push outward normaal.
-                    const px = x + nx * displacement;
-                    const py = y + ny * displacement;
-
-                    if (i === 0) ctx.moveTo(px, py);
-                    else ctx.lineTo(px, py);
-                }
-
-                ctx.closePath();
-                ctx.stroke();
-                ctx.restore();
-            }
-
-            animationId = requestAnimationFrame(update);
-        };
-
-        update();
-        return () => cancelAnimationFrame(animationId);
-    }, [analyser, hasActiveInput, dimensions]);
 
     return (
         <div className="absolute inset-x-0 top-[15%] flex flex-col items-center z-50 pointer-events-none">
             <AnimatePresence>
                 {hasActiveInput && primaryFrequency > 0 && (
+                    // ...
                     <motion.div
                         key="info-panel"
-                        ref={containerRef}
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.8 }}
@@ -304,17 +62,6 @@ export const NoteInfoCard: React.FC<NoteInfoCardProps> = ({
                             boxShadow: `0 0 60px -10px ${blendColor ? blendColor + '30' : 'rgba(0,0,0,0)'}`
                         }}
                     >
-                        {/* Canvas Waveform Border */}
-                        <canvas
-                            ref={canvasRef}
-                            className="absolute pointer-events-none"
-                            style={{
-                                left: '-60px',
-                                top: '-60px',
-                                // We don't need explicit width/height here as resizing manages the element attr
-                            }}
-                        />
-
                         {/* Content Container - needed for measuring size */}
                         <div className="p-8 flex flex-col items-center justify-center">
 
