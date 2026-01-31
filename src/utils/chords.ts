@@ -1,15 +1,16 @@
 /**
  * Chord Detection Utilities
- * 
+ *
  * Implements chord recognition algorithms for real-time harmonic analysis.
  * Detects standard triads, seventh chords, and special harmonic collections.
- * 
+ *
  * Includes detection for Scriabin's "Mystic Chord" (1910):
- * A six-note collection (C, F#, Bb, E, A, D) representing tension between 
+ * A six-note collection (C, D, E, F#, A, Bb) representing tension between
  * mortal and transcendent in Prometheus: The Poem of Fire.
- * 
+ * Pitch classes: 0, 2, 4, 6, 9, 10 (C, D, E, F#, A, Bb)
+ *
  * The mystic chord maps the trajectory from earthly (C=Red) to divine (F#=Blue-violet).
- * 
+ *
  * @see Scriabin, A. (1910). Prometheus: The Poem of Fire, Op. 60
  * @see https://www.gresham.ac.uk/watch-now/music-light-colour
  */
@@ -76,13 +77,13 @@ export const detectChord = (frequencies: number[]): ChordResult | null => {
         if (signature === '0,3,6,9') return { root: rootName, quality: 'Dim7', name: `${rootName} Dim7` };
         if (signature === '0,3,7,11') return { root: rootName, quality: 'MinMaj7', name: `${rootName} MinMaj7` };
 
-        // Scriabin's Mystic Chord (6 notes)
+        // Scriabin's Mystic Chord (6 notes): C, D, E, F#, A, Bb
         // Represents tension between mortal (C=Red) and transcendent (F#=Blue-violet)
         // Used in Prometheus: The Poem of Fire (1910)
-        if (signature === '0,1,4,6,9,11') return { 
-            root: rootName, 
-            quality: 'Mystic', 
-            name: `${rootName} Mystic Chord` 
+        if (signature === '0,2,4,6,9,10') return {
+            root: rootName,
+            quality: 'Mystic',
+            name: `${rootName} Mystic Chord`
         };
     }
 

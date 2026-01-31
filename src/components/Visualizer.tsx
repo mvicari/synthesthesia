@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { motion, useMotionValue, useTransform, AnimatePresence } from 'framer-motion';
-import { frequencyToRGB, getMixColor, getHarmonicColor, getHarmonicMixColor } from '../utils/colors';
+import { frequencyToRGB, getMixColor, getHarmonicColor, getHarmonicMixColor, getNewton7BandColor, getNewton7BandMixColor } from '../utils/colors';
 
 /**
  * Visualizer modes representing two competing worldviews on music-color correspondence:
@@ -16,6 +16,8 @@ interface VisualizerProps {
   pitchBend?: number;
   /** Current visualization mode: physics (Newton) or harmonic (Mermikides) */
   mode?: VisualizerMode;
+  /** Physics sub-mode: continuous spectrum or Newton's 7 discrete bands */
+  physicsSubMode?: 'continuous' | '7band';
   analyser?: AnalyserNode | null;
   waveform?: OscillatorType;
 }
@@ -24,6 +26,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({
   activeNotes,
   pitchBend = 0,
   mode = 'physics',
+  physicsSubMode = 'continuous',
   analyser,
   waveform = 'sine',
 }) => {
@@ -60,7 +63,11 @@ export const Visualizer: React.FC<VisualizerProps> = ({
   if (primaryFrequency > 0) {
     if (mode === 'harmonic') {
       blendColor = allActiveFreqs.length > 1 ? getHarmonicMixColor(allActiveFreqs) : getHarmonicColor(primaryFrequency);
+    } else if (physicsSubMode === '7band') {
+      // Newton's discrete 7-band mode
+      blendColor = allActiveFreqs.length > 1 ? getNewton7BandMixColor(allActiveFreqs) : getNewton7BandColor(primaryFrequency);
     } else {
+      // Continuous spectrum mode
       if (allActiveFreqs.length > 1) {
         blendColor = getMixColor(allActiveFreqs);
       } else {
@@ -205,6 +212,27 @@ export const Visualizer: React.FC<VisualizerProps> = ({
             />
           )}
         </AnimatePresence>
+
+        {/* Idle Breathing Animation - subtle pulse when no notes playing */}
+        <AnimatePresence>
+          {!hasActiveInput && (
+            <motion.div
+              key="idle-breathing-orb"
+              initial={{ scale: 1, opacity: 0 }}
+              animate={{
+                scale: [1, 1.05, 1],
+                opacity: [0.15, 0.25, 0.15],
+              }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+              className="absolute w-32 h-32 rounded-full bg-white/10 blur-[40px]"
+            />
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Waveform Visualization Overlay - Full Width */}
@@ -219,6 +247,56 @@ export const Visualizer: React.FC<VisualizerProps> = ({
           }}
         />
       </div>
+
+      {/* Harmonic Series Overlay - Shows partials when sawtooth is active */}
+      <AnimatePresence>
+        {hasActiveInput && isSaw && allActiveFreqs.length === 1 && (
+          <motion.div
+            key="harmonic-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="absolute bottom-32 left-0 right-0 h-24 flex items-end justify-center gap-1 pointer-events-none z-5"
+          >
+            {/* Show first 8 harmonics (fundamental + 7 partials) */}
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => {
+              const partialFreq = primaryFrequency * n;
+              // Get color for this partial (in current mode)
+              const partialColor = mode === 'harmonic'
+                ? getHarmonicColor(partialFreq)
+                : physicsSubMode === '7band'
+                  ? getNewton7BandColor(partialFreq)
+                  : frequencyToRGB(partialFreq);
+              // Amplitude decreases as 1/n for sawtooth
+              const amplitude = 1 / n;
+
+              return (
+                <motion.div
+                  key={n}
+                  initial={{ scaleY: 0 }}
+                  animate={{ scaleY: 1 }}
+                  transition={{ delay: n * 0.05 }}
+                  className="flex flex-col items-center gap-1"
+                >
+                  <div
+                    className="w-1 rounded-full origin-bottom"
+                    style={{
+                      height: `${amplitude * 60}px`,
+                      backgroundColor: partialColor,
+                      opacity: 0.6,
+                      boxShadow: `0 0 10px ${partialColor}`,
+                    }}
+                  />
+                  <span className="text-[7px] text-white/30 font-mono">
+                    {n === 1 ? 'f' : `${n}f`}
+                  </span>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

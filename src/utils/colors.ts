@@ -152,27 +152,139 @@ export const getMixColor = (frequencies: number[]): string => {
 };
 
 /**
+ * Newton's Discrete 7-Band Color Mapping
+ *
+ * Newton explicitly forced the rainbow into 7 colors to match the 7 notes
+ * of the D Dorian scale. This function maps any frequency to one of
+ * Newton's 7 discrete color bands based on the nearest D Dorian note.
+ *
+ * D Dorian scale: D, E, F, G, A, B, C
+ * Newton's mapping: D=Red, E=Orange, F=Yellow, G=Green, A=Blue, B=Indigo, C=Violet
+ */
+const NEWTON_BANDS: Record<string, { color: string; name: string }> = {
+  D: { color: 'rgb(220, 38, 38)', name: 'Red' },      // red-600
+  E: { color: 'rgb(249, 115, 22)', name: 'Orange' },  // orange-500
+  F: { color: 'rgb(250, 204, 21)', name: 'Yellow' },  // yellow-400
+  G: { color: 'rgb(34, 197, 94)', name: 'Green' },    // green-500
+  A: { color: 'rgb(37, 99, 235)', name: 'Blue' },     // blue-600
+  B: { color: 'rgb(67, 56, 202)', name: 'Indigo' },   // indigo-700
+  C: { color: 'rgb(139, 92, 246)', name: 'Violet' },  // violet-500
+};
+
+// D Dorian pitch classes: D=2, E=4, F=5, G=7, A=9, B=11, C=0
+const DORIAN_PITCH_CLASSES = [2, 4, 5, 7, 9, 11, 0];
+const DORIAN_NOTES = ['D', 'E', 'F', 'G', 'A', 'B', 'C'];
+
+/**
+ * Get Newton's discrete 7-band color for a frequency
+ * Maps to nearest D Dorian note, then returns Newton's assigned color
+ */
+export const getNewton7BandColor = (frequency: number): string => {
+  if (frequency <= 0) return 'rgb(0, 0, 0)';
+
+  // Convert to pitch class (0-11)
+  const midiNote = 12 * Math.log2(frequency / 440) + 69;
+  const pitchClass = ((Math.round(midiNote) % 12) + 12) % 12;
+
+  // Find nearest D Dorian pitch class
+  let minDistance = 12;
+  let nearestIndex = 0;
+
+  for (let i = 0; i < DORIAN_PITCH_CLASSES.length; i++) {
+    const pc = DORIAN_PITCH_CLASSES[i];
+    // Calculate circular distance (e.g., C# to D is 1, not 11)
+    const dist = Math.min(
+      Math.abs(pitchClass - pc),
+      12 - Math.abs(pitchClass - pc)
+    );
+    if (dist < minDistance) {
+      minDistance = dist;
+      nearestIndex = i;
+    }
+  }
+
+  const noteName = DORIAN_NOTES[nearestIndex];
+  return NEWTON_BANDS[noteName].color;
+};
+
+/**
+ * Get Newton's 7-band info for display
+ */
+export const getNewton7BandInfo = (frequency: number): { noteName: string; bandName: string; color: string } => {
+  if (frequency <= 0) return { noteName: '-', bandName: '-', color: 'rgb(0, 0, 0)' };
+
+  const midiNote = 12 * Math.log2(frequency / 440) + 69;
+  const pitchClass = ((Math.round(midiNote) % 12) + 12) % 12;
+
+  let minDistance = 12;
+  let nearestIndex = 0;
+
+  for (let i = 0; i < DORIAN_PITCH_CLASSES.length; i++) {
+    const pc = DORIAN_PITCH_CLASSES[i];
+    const dist = Math.min(
+      Math.abs(pitchClass - pc),
+      12 - Math.abs(pitchClass - pc)
+    );
+    if (dist < minDistance) {
+      minDistance = dist;
+      nearestIndex = i;
+    }
+  }
+
+  const noteName = DORIAN_NOTES[nearestIndex];
+  const band = NEWTON_BANDS[noteName];
+  return { noteName, bandName: band.name, color: band.color };
+};
+
+/**
+ * Get mixed color for Newton's 7-band mode
+ */
+export const getNewton7BandMixColor = (frequencies: number[]): string => {
+  if (frequencies.length === 0) return 'transparent';
+  if (frequencies.length === 1) return getNewton7BandColor(frequencies[0]);
+
+  let rTotal = 0, gTotal = 0, bTotal = 0;
+
+  frequencies.forEach(freq => {
+    const rgbStr = getNewton7BandColor(freq);
+    const [r, g, b] = rgbStr.match(/\d+/g)?.map(Number) || [0, 0, 0];
+    rTotal += r;
+    gTotal += g;
+    bTotal += b;
+  });
+
+  const rAvg = Math.round(rTotal / frequencies.length);
+  const gAvg = Math.round(gTotal / frequencies.length);
+  const bAvg = Math.round(bTotal / frequencies.length);
+
+  return `rgb(${rAvg}, ${gAvg}, ${bAvg})`;
+};
+
+/**
  * Scriabin/Mermikides Lookup Table (LUT) for Circle of Fifths
- * 
+ *
  * Maps pitch classes to hues based on historical synesthetic anchors and the Circle of Fifths.
  * Research by Itoh et al. (2017) found remarkable consistency across synaesthetes:
  * - Cs are consistently perceived as RED
- * - Ds lean toward GOLDEN-YELLOW  
+ * - Ds lean toward GOLDEN-YELLOW
  * - Gs are associated with BLUE
  * - Fs tend toward GREEN
- * 
+ *
  * Scriabin's specific anchors (used in Prometheus: The Poem of Fire, 1910):
  * - C = Red (0°) — the human, earthly point of origin
  * - D = Golden-yellow (60°) — transformation
  * - F# = Blue-violet (270°) — the transcendent and divine
- * 
- * The array is indexed by Circle of Fifths position: C(0), G(1), D(2), A(3), E(4), B(5), 
- * F#(6), C#(7), G#(8), D#(9), A#(10), F(11)
- * 
+ *
+ * The array is indexed by Circle of Fifths position:
+ * C(0)=0°, G(1)=30°, D(2)=60°, A(3)=90°, E(4)=120°, B(5)=150°,
+ * F#(6)=270°, C#(7)=300°, G#(8)=330°, D#(9)=180°, A#(10)=240°, F(11)=210°
+ *
+ * Each pitch class now has a unique hue value.
+ *
  * @see https://www.gresham.ac.uk/watch-now/music-light-colour
  * @see Itoh, K., Sakata, H., & Kashino, M. (2017). Scientific Reports, 7(1), 17781
  */
-const SCRIABIN_HUES = [0, 210, 60, 270, 120, 30, 240, 30, 260, 30, 285, 120];
+const SCRIABIN_HUES = [0, 30, 60, 90, 120, 150, 270, 300, 330, 180, 240, 210];
 
 /**
  * Milton Mermikides' Harmonic Color Mapping using Circle of Fifths

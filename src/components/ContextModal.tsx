@@ -79,6 +79,15 @@ export const ContextModal: React.FC<ContextModalProps> = ({
                   </p>
                 </div>
 
+                {isPhysics && (
+                  <blockquote className="border-l-2 border-white/20 pl-4 italic text-sm text-gray-400">
+                    "This secret analogy between light and sound leads one to suspect that all things in nature have their hidden rapports, which perhaps some day will be discovered."
+                    <footer className="mt-2 text-xs text-white/40 not-italic">
+                      — Voltaire, <em>Éléments de la philosophie de Newton</em> (1738)
+                    </footer>
+                  </blockquote>
+                )}
+
                 <div>
                   <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-white/50">Philosophical Mapping</h3>
                   <p className="text-sm leading-relaxed text-gray-300 font-light">
@@ -93,6 +102,21 @@ export const ContextModal: React.FC<ContextModalProps> = ({
                     )}
                   </p>
                 </div>
+
+                {isPhysics && (
+                  <div>
+                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-white/50">Newton's Color-Note Mapping</h3>
+                    <div className="grid grid-cols-7 gap-1 text-center text-[10px]">
+                      <div className="rounded bg-red-600/80 py-2 text-white font-medium">D<br/><span className="opacity-60">Red</span></div>
+                      <div className="rounded bg-orange-500/80 py-2 text-white font-medium">E<br/><span className="opacity-60">Orange</span></div>
+                      <div className="rounded bg-yellow-400/80 py-2 text-black font-medium">F<br/><span className="opacity-60">Yellow</span></div>
+                      <div className="rounded bg-green-500/80 py-2 text-white font-medium">G<br/><span className="opacity-60">Green</span></div>
+                      <div className="rounded bg-blue-600/80 py-2 text-white font-medium">A<br/><span className="opacity-60">Blue</span></div>
+                      <div className="rounded bg-indigo-700/80 py-2 text-white font-medium">B<br/><span className="opacity-60">Indigo</span></div>
+                      <div className="rounded bg-violet-600/80 py-2 text-white font-medium">C<br/><span className="opacity-60">Violet</span></div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="mt-10 flex flex-wrap gap-4 border-t border-white/5 pt-8">

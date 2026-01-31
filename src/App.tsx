@@ -5,6 +5,7 @@ import { Wheels } from './components/Wheels';
 import { NoteInfoCard } from './components/NoteInfoCard';
 import { ContextModal } from './components/ContextModal';
 import { BoubaKikiTutorial } from './components/BoubaKikiTutorial';
+import { OctaveJourney } from './components/OctaveJourney';
 import { useAudio } from './utils/audio';
 import { NOTES, type Note } from './utils/notes';
 
@@ -14,8 +15,10 @@ function App() {
   const [pitchBend, setPitchBend] = useState(0); // -2 to 2 semitones
   const [hasStarted, setHasStarted] = useState(false);
   const [mode, setMode] = useState<VisualizerMode>('physics');
+  const [physicsSubMode, setPhysicsSubMode] = useState<'continuous' | '7band'>('continuous');
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [isBoubaKikiOpen, setIsBoubaKikiOpen] = useState(false);
+  const [showOctaveJourney, setShowOctaveJourney] = useState(false);
   const [waveform, setWaveformState] = useState<OscillatorType>('sine');
 
   // Update Audio Engine when UI state changes
@@ -76,6 +79,18 @@ function App() {
         const nextWave = waveform === 'sine' ? 'sawtooth' : 'sine';
         setWaveformState(nextWave);
         setWaveform(nextWave);
+        return;
+      }
+
+      // O key toggles Octave Journey visualization
+      if (e.key.toLowerCase() === 'o' && !e.repeat) {
+        setShowOctaveJourney(prev => !prev);
+        return;
+      }
+
+      // N key toggles Newton's 7-band mode (only in physics mode)
+      if (e.key.toLowerCase() === 'n' && !e.repeat) {
+        setPhysicsSubMode(prev => prev === 'continuous' ? '7band' : 'continuous');
         return;
       }
 
@@ -153,6 +168,7 @@ function App() {
         activeNotes={activeNotes}
         pitchBend={pitchBend}
         mode={mode}
+        physicsSubMode={physicsSubMode}
         analyser={analyser.current}
         waveform={waveform}
       />
@@ -241,6 +257,20 @@ function App() {
               <p className="text-[8px] md:text-[10px] text-white/30 font-mono mt-1 text-center">
                 Press [M] to toggle
               </p>
+
+              {/* Newton 7-Band Mode Toggle (only visible in physics mode) */}
+              {mode === 'physics' && (
+                <button
+                  onClick={() => setPhysicsSubMode(prev => prev === 'continuous' ? '7band' : 'continuous')}
+                  className={`mt-2 px-3 py-1 rounded-full border text-[9px] font-mono tracking-wider transition-all ${physicsSubMode === '7band'
+                    ? 'border-yellow-500/30 bg-yellow-500/10 text-yellow-300'
+                    : 'border-white/10 bg-white/5 text-white/50 hover:bg-white/10'
+                    }`}
+                >
+                  {physicsSubMode === '7band' ? '7-BAND (Newton)' : 'CONTINUOUS'}
+                  <span className="ml-1 text-white/30">[N]</span>
+                </button>
+              )}
             </div>
 
             <div className="flex flex-col gap-2">
@@ -292,6 +322,7 @@ function App() {
         activeNotes={activeNotes}
         pitchBend={pitchBend}
         mode={mode}
+        physicsSubMode={physicsSubMode}
         analyser={analyser.current}
         waveform={waveform}
       />
@@ -305,6 +336,12 @@ function App() {
       <BoubaKikiTutorial
         isOpen={isBoubaKikiOpen}
         onClose={() => setIsBoubaKikiOpen(false)}
+      />
+
+      {/* Octave Journey - "Slowed Down Light" visualization (toggle with [O]) */}
+      <OctaveJourney
+        frequency={activeNotes.size > 0 ? Array.from(activeNotes)[0] * Math.pow(2, pitchBend / 12) : 0}
+        isVisible={showOctaveJourney && activeNotes.size > 0}
       />
     </div>
   );
