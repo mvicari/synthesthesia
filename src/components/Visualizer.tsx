@@ -82,49 +82,25 @@ export const Visualizer: React.FC<VisualizerProps> = ({
     return color;
   };
 
-  // Helper to convert HSL to RGB for consistent rendering with physics mode
-  const hslToRgb = (color: string): string => {
+  // Helper to create a bright waveform color for harmonic mode
+  // Makes the waveform nearly white with just a hint of the hue for visibility against the colored background
+  const getBrightWaveformColor = (color: string): string => {
     const match = color.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
-    if (!match) return color;
+    if (!match) return 'rgb(255, 255, 255)';
 
-    const h = parseInt(match[1]) / 360;
-    const s = parseInt(match[2]) / 100;
-    const l = parseInt(match[3]) / 100;
-
-    if (s === 0) {
-      const gray = Math.round(l * 255);
-      return `rgb(${gray}, ${gray}, ${gray})`;
-    }
-
-    const hue2rgb = (p: number, q: number, t: number) => {
-      if (t < 0) t += 1;
-      if (t > 1) t -= 1;
-      if (t < 1/6) return p + (q - p) * 6 * t;
-      if (t < 1/2) return q;
-      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-      return p;
-    };
-
-    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-    const p = 2 * l - q;
-
-    const r = Math.round(hue2rgb(p, q, h + 1/3) * 255);
-    const g = Math.round(hue2rgb(p, q, h) * 255);
-    const b = Math.round(hue2rgb(p, q, h - 1/3) * 255);
-
-    return `rgb(${r}, ${g}, ${b})`;
+    const h = parseInt(match[1]);
+    // Very low saturation (10%) and very high lightness (92%) = nearly white with a tint
+    return `hsl(${h}, 10%, 92%)`;
   };
 
   // Calculate Color based on Mode (Theory)
-  // Both modes now use the same approach: actual color for background and waveform
-  // This creates visual cohesion like physics mode naturally achieves
   let blendColor = 'transparent';
   let baseHarmonicColor = 'transparent'; // Original saturated color for info card
   if (primaryFrequency > 0) {
     if (mode === 'harmonic') {
       baseHarmonicColor = allActiveFreqs.length > 1 ? getHarmonicMixColor(allActiveFreqs) : getHarmonicColor(primaryFrequency);
-      // Convert HSL to RGB for consistent rendering with physics mode
-      blendColor = hslToRgb(baseHarmonicColor);
+      // Use full harmonic color for background
+      blendColor = baseHarmonicColor;
     } else if (physicsSubMode === '7band') {
       // Newton's discrete 7-band mode
       blendColor = allActiveFreqs.length > 1 ? getNewton7BandMixColor(allActiveFreqs) : getNewton7BandColor(primaryFrequency);
@@ -138,9 +114,9 @@ export const Visualizer: React.FC<VisualizerProps> = ({
     }
   }
 
-  // Use same color for waveform as background (like physics mode)
-  // The blur/glow effects create visual separation
-  const waveformColor = blendColor;
+  // Harmonic mode: bright near-white waveform for contrast against colored background
+  // Physics mode: same color for both (works naturally due to RGB characteristics)
+  const waveformColor = mode === 'harmonic' ? getBrightWaveformColor(baseHarmonicColor) : blendColor;
 
   // Store stable refs for the animation loop to avoid restarting it
   const renderConfig = useRef({ blendColor, waveformColor, isSaw, waveform, hasActiveInput, mode });
